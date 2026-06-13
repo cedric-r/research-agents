@@ -7,7 +7,7 @@ Build a multi-agent research and debate system in Vanilla PHP, starting with a s
 ## Phases
 
 - [x] **Phase 1: Foundation & Single-Agent Baseline** - Config loading, logging, and one agent answering via LLM to validate core value before multi-agent complexity
-- [ ] **Phase 2: Agent Runtime & Tool Integration** - LlmClient, web search, paper search (arXiv + Semantic Scholar), AgentManager with timeout architecture
+- [x] **Phase 2: Agent Runtime & Tool Integration** - LlmClient, web search, paper search (arXiv + Semantic Scholar), AgentManager with timeout architecture (completed 2026-06-13)
 - [ ] **Phase 3: Orchestration Pipeline** - Arbitrator distributes questions, enforces per-step timeouts, collects Round 1 answers with structured handoffs
 - [ ] **Phase 4: Debate System & Echo Chamber Prevention** - Refined 2-round debate, quality evaluation, peer critique, reasoned answer selection with diversity mechanisms
 - [ ] **Phase 5: Storage & Presentation** - Session persistence (markdown transcripts), CLI REPL with readline, Web REPL with SSE streaming
@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Single-Agent Baseline | 3/3 | Complete    | 2026-06-13 |
-| 2. Agent Runtime & Tool Integration | 2/3 | In Progress|  |
+| 2. Agent Runtime & Tool Integration | 3/3 | Complete   | 2026-06-13 |
 | 3. Orchestration Pipeline | TBD | Not started | - |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |
 | 5. Storage & Presentation | TBD | Not started | - |
