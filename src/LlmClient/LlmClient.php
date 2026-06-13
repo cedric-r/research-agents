@@ -99,7 +99,14 @@ class LlmClient
 
         $this->lastResponse = $result;
 
-        return $result['choices'][0]['message']['content'] ?? '';
+        if (!isset($result['choices'][0]['message']['content'])) {
+            $finishReason = $result['choices'][0]['finish_reason'] ?? 'unknown';
+            throw new LlmException(
+                "API response missing message content (finish_reason: {$finishReason})"
+            );
+        }
+
+        return $result['choices'][0]['message']['content'];
     }
 
     /**
