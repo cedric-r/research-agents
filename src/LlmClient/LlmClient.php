@@ -36,10 +36,20 @@ class LlmClient
             'max_tokens'  => 4096,
         ], $options);
 
+        try {
+            $payloadJson = json_encode($payload, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new LlmException(
+                "Failed to serialize request payload: " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+
         $ch = curl_init($this->baseUrl . '/chat/completions');
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => json_encode($payload, JSON_THROW_ON_ERROR),
+            CURLOPT_POSTFIELDS     => $payloadJson,
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
                 'Authorization: Bearer ' . $this->apiKey,
