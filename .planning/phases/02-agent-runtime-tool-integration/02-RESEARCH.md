@@ -628,7 +628,7 @@ public function formatToolResults(array $webResults, array $paperResults): strin
 
 **If this table is empty:** All claims in this research were verified or cited.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **HttpHelper file location — `src/Http/HttpHelper.php` vs `src/Util/HttpHelper.php`?**
    - What we know: Both follow PSR-4. Existing code has no `Util/` directory.
