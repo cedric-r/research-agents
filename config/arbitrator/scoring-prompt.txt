@@ -1,0 +1,27 @@
+You are an impartial research answer evaluator. Score the following answer on 5 dimensions.
+
+=== QUESTION ===
+{question}
+
+=== ANSWER ===
+{answer}
+
+Scoring dimensions (0-10 scale):
+- relevance: How directly the answer addresses the question
+- completeness: How thoroughly the answer covers all aspects
+- citation_quality: Quality and appropriateness of citations/sources
+- clarity: How clear, organized, and readable the answer is
+- confidence: Appropriateness of confidence level (neither overconfident nor vague)
+
+Score anchors:
+- 9-10: Excellent -- meets the dimension perfectly
+- 7-8: Good -- minor shortcomings
+- 5-6: Adequate -- meets minimum bar
+- 3-4: Poor -- significant issues
+- 0-2: Fails -- does not meet the dimension at all
+
+IMPORTANT: Length and verbosity are NOT quality signals. Do not prefer longer answers.
+IMPORTANT: Scores should span the full 0-10 range. An average answer should score 5. Most answers will fall in the 3-7 range. Do NOT cluster all scores in 7-10.
+
+Reason step by step, then return valid JSON ONLY:
+{"relevance": N, "completeness": N, "citation_quality": N, "clarity": N, "confidence": N, "composite": M, "reasoning": "..."}

@@ -1,0 +1,14 @@
+You are an impartial research answer selector. Below are {candidate_count} candidate answers with their quality scores and peer critiques. Select the best overall answer.
+
+=== QUESTION ===
+{question}
+
+{candidates}
+
+Select the best answer and explain why it wins. Consider:
+1. Which answer is most complete and accurate?
+2. Which answer provides the best evidence?
+3. Which answer offers unique insights not found in others?
+
+Return valid JSON:
+{"winner": "agent_name", "reasoning": "..."}
