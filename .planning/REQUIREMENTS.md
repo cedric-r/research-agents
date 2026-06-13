@@ -5,7 +5,7 @@
 
 ## v1 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for initial release (43 total). Each maps to roadmap phases.
 
 ### Agent Configuration
 
@@ -96,7 +96,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | User authentication / multi-user | Single-user system per requirements |
 | Scheduled/automated research | Manual trigger only — scheduling is orthogonal to interactive value |
 | Plugin system for custom agent capabilities | Capabilities defined in config/personality. Plugin API is massive scope expansion |
-| N-round configurable debate (beyond 2) | Diminishing returns documented in debate research (D3 paper). Cap at 2 for v1 |
+| N-round configurable debate (beyond 2) | Diminishing returns documented in D3 paper. Cap at 2 for v1 |
 | Visual workflow designer | Massive frontend project, does not help research quality |
 | Custom consensus policies | Arbitrator selects best answer. Consensus is implicit |
 | Agent-to-agent direct messaging | Structured rounds only. All communication through arbitrator |
@@ -106,55 +106,62 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONF-01 | Pending | Pending |
-| CONF-02 | Pending | Pending |
-| CONF-03 | Pending | Pending |
-| CONF-04 | Pending | Pending |
-| CONF-05 | Pending | Pending |
-| CONF-06 | Pending | Pending |
-| CONF-07 | Pending | Pending |
-| CONF-08 | Pending | Pending |
-| TOOL-01 | Pending | Pending |
-| TOOL-02 | Pending | Pending |
-| TOOL-03 | Pending | Pending |
-| TOOL-04 | Pending | Pending |
-| TOOL-05 | Pending | Pending |
-| TOOL-06 | Pending | Pending |
-| TOOL-07 | Pending | Pending |
-| TOOL-08 | Pending | Pending |
-| ORCH-01 | Pending | Pending |
-| ORCH-02 | Pending | Pending |
-| ORCH-03 | Pending | Pending |
-| ORCH-04 | Pending | Pending |
-| ORCH-05 | Pending | Pending |
-| ORCH-06 | Pending | Pending |
-| ORCH-07 | Pending | Pending |
-| ORCH-08 | Pending | Pending |
-| ORCH-09 | Pending | Pending |
-| ORCH-10 | Pending | Pending |
-| PERS-01 | Pending | Pending |
-| PERS-02 | Pending | Pending |
-| PERS-03 | Pending | Pending |
-| PERS-04 | Pending | Pending |
-| LOG-01 | Pending | Pending |
-| LOG-02 | Pending | Pending |
-| LOG-03 | Pending | Pending |
-| CLI-01 | Pending | Pending |
-| CLI-02 | Pending | Pending |
-| CLI-03 | Pending | Pending |
-| CLI-04 | Pending | Pending |
-| CLI-05 | Pending | Pending |
-| WEB-01 | Pending | Pending |
-| WEB-02 | Pending | Pending |
-| WEB-03 | Pending | Pending |
-| WEB-04 | Pending | Pending |
-| WEB-05 | Pending | Pending |
+| CONF-01 | Phase 1 | Pending |
+| CONF-02 | Phase 1 | Pending |
+| CONF-03 | Phase 1 | Pending |
+| CONF-04 | Phase 1 | Pending |
+| CONF-05 | Phase 1 | Pending |
+| CONF-06 | Phase 1 | Pending |
+| CONF-07 | Phase 1 | Pending |
+| CONF-08 | Phase 2 | Pending |
+| TOOL-01 | Phase 1 | Pending |
+| TOOL-02 | Phase 2 | Pending |
+| TOOL-03 | Phase 2 | Pending |
+| TOOL-04 | Phase 2 | Pending |
+| TOOL-05 | Phase 2 | Pending |
+| TOOL-06 | Phase 2 | Pending |
+| TOOL-07 | Phase 2 | Pending |
+| TOOL-08 | Phase 2 | Pending |
+| ORCH-01 | Phase 3 | Pending |
+| ORCH-02 | Phase 3 | Pending |
+| ORCH-03 | Phase 3 | Pending |
+| ORCH-04 | Phase 3 | Pending |
+| ORCH-05 | Phase 4 | Pending |
+| ORCH-06 | Phase 4 | Pending |
+| ORCH-07 | Phase 4 | Pending |
+| ORCH-08 | Phase 4 | Pending |
+| ORCH-09 | Phase 4 | Pending |
+| ORCH-10 | Phase 3 | Pending |
+| PERS-01 | Phase 5 | Pending |
+| PERS-02 | Phase 5 | Pending |
+| PERS-03 | Phase 5 | Pending |
+| PERS-04 | Phase 5 | Pending |
+| LOG-01 | Phase 1 | Pending |
+| LOG-02 | Phase 1 | Pending |
+| LOG-03 | Phase 5 | Pending |
+| CLI-01 | Phase 5 | Pending |
+| CLI-02 | Phase 5 | Pending |
+| CLI-03 | Phase 5 | Pending |
+| CLI-04 | Phase 5 | Pending |
+| CLI-05 | Phase 5 | Pending |
+| WEB-01 | Phase 5 | Pending |
+| WEB-02 | Phase 5 | Pending |
+| WEB-03 | Phase 5 | Pending |
+| WEB-04 | Phase 5 | Pending |
+| WEB-05 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 0
-- Unmapped: 39 ⚠️
+- v1 requirements: 43 total
+- Mapped to phases: 43
+- Unmapped: 0 ✓
+
+**Phase breakdown:**
+- Phase 1: 10 requirements (CONF-01..07, TOOL-01, LOG-01..02)
+- Phase 2: 8 requirements (CONF-08, TOOL-02..08)
+- Phase 3: 5 requirements (ORCH-01..04, ORCH-10)
+- Phase 4: 5 requirements (ORCH-05..09)
+- Phase 5: 15 requirements (PERS-01..04, LOG-03, CLI-01..05, WEB-01..05)
 
 ---
 *Requirements defined: 2026-06-13*
-*Last updated: 2026-06-13 after initial definition*
+*Last updated: 2026-06-13 after roadmap creation*
