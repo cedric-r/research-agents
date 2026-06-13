@@ -8,46 +8,91 @@ require_once __DIR__ . '/../src/bootstrap.php';
 use App\Config\Loader;
 
 $projectRoot = dirname(__DIR__);
-$loader = new Loader();
-
-$configs = [
-    'Agent config (researcher)' => $projectRoot . '/config/agents/researcher/config.json',
-    'Agent preferences'         => $projectRoot . '/config/agents/researcher/preferences.json',
-    'Arbitrator config'         => $projectRoot . '/config/arbitrator/config.json',
-];
+$agentsDir   = $projectRoot . '/config/agents';
+$loader      = new Loader();
 
 $successCount = 0;
 $failCount    = 0;
 
-foreach ($configs as $name => $path) {
-    try {
-        if (!file_exists($path)) {
-            throw new \RuntimeException('File not found');
-        }
+// Validate each agent directory under config/agents/
+$agentDirs = glob($agentsDir . '/*', GLOB_ONLYDIR);
 
-        if (str_ends_with($path, 'config.json')) {
-            // Researcher config requires provider, model, api_key
-            // Arbitrator config has no required fields (Phase 3 placeholder)
-            if (str_contains($path, 'agents/researcher')) {
-                $loader->load($path, required: ['provider', 'model', 'api_key'], types: ['provider' => 'string', 'model' => 'string', 'api_key' => 'string']);
-            } else {
-                // preferences.json or arbitrator config — just validate JSON
-                $loader->load($path, required: [], types: []);
-            }
+if ($agentDirs === false || $agentDirs === []) {
+    echo "[INFO] No agent directories found under {$agentsDir}" . PHP_EOL;
+}
+
+foreach ($agentDirs as $agentDir) {
+    $agentName = basename($agentDir);
+
+    // Validate config.json (required fields: provider, model, api_key)
+    $configPath = $agentDir . '/config.json';
+    if (file_exists($configPath)) {
+        try {
+            $loader->load(
+                $configPath,
+                required: ['provider', 'model', 'api_key'],
+                types: ['provider' => 'string', 'model' => 'string', 'api_key' => 'string']
+            );
+            echo "[OK]   {$agentName}: config.json" . PHP_EOL;
+            $successCount++;
+        } catch (\Throwable $e) {
+            echo "[FAIL] {$agentName}: config.json — " . $e->getMessage() . PHP_EOL;
+            $failCount++;
+        }
+    } else {
+        echo "[FAIL] {$agentName}: config.json — File not found" . PHP_EOL;
+        $failCount++;
+    }
+
+    // Validate preferences.json (must be valid JSON)
+    $prefsPath = $agentDir . '/preferences.json';
+    if (file_exists($prefsPath)) {
+        try {
+            $loader->load($prefsPath, required: [], types: []);
+            echo "[OK]   {$agentName}: preferences.json" . PHP_EOL;
+            $successCount++;
+        } catch (\Throwable $e) {
+            echo "[FAIL] {$agentName}: preferences.json — " . $e->getMessage() . PHP_EOL;
+            $failCount++;
+        }
+    } else {
+        // preferences.json is optional — only warn
+        echo "[WARN] {$agentName}: preferences.json — File not found (optional)" . PHP_EOL;
+        $successCount++;
+    }
+
+    // Validate SOUL.md (must exist and be readable)
+    $soulPath = $agentDir . '/SOUL.md';
+    if (file_exists($soulPath)) {
+        $soulContent = file_get_contents($soulPath);
+        if ($soulContent !== false && trim($soulContent) !== '') {
+            echo "[OK]   {$agentName}: SOUL.md" . PHP_EOL;
+            $successCount++;
         } else {
-            $loader->load($path, required: [], types: []);
+            echo "[FAIL] {$agentName}: SOUL.md — File is empty or unreadable" . PHP_EOL;
+            $failCount++;
         }
+    } else {
+        echo "[FAIL] {$agentName}: SOUL.md — File not found" . PHP_EOL;
+        $failCount++;
+    }
+}
 
-        echo "[OK]   {$name}" . PHP_EOL;
+// Validate arbitrator config if directory exists (Phase 3 placeholder)
+$arbitratorPath = $projectRoot . '/config/arbitrator/config.json';
+if (file_exists($arbitratorPath)) {
+    try {
+        $loader->load($arbitratorPath, required: [], types: []);
+        echo "[OK]   arbitrator: config.json" . PHP_EOL;
         $successCount++;
     } catch (\Throwable $e) {
-        echo "[FAIL] {$name}: " . $e->getMessage() . PHP_EOL;
+        echo "[FAIL] arbitrator: config.json — " . $e->getMessage() . PHP_EOL;
         $failCount++;
     }
 }
 
 $total = $successCount + $failCount;
 echo PHP_EOL;
-echo "Result: {$successCount}/{$total} configs passed" . PHP_EOL;
+echo "Result: {$successCount}/{$total} checks passed" . PHP_EOL;
 
 exit($failCount > 0 ? 1 : 0);
