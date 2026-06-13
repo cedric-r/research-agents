@@ -66,8 +66,8 @@ Plans:
   5. User can run a multi-agent research session and see all agents' independent answers collected and returned
 
 **Plans**: 2 plans
-
 Plans:
+
 - [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
 - [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
 
@@ -88,6 +88,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
+
 - [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
 - [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
 
@@ -109,8 +110,10 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
+
 - [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
 - [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
+
 **UI hint**: yes
 
 ## Progress
