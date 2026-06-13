@@ -137,7 +137,7 @@ class AgentManager
      *
      * @param  string $question      Research question (capped at 2000 chars per ResearchAgent)
      * @param  string $correlationId Correlation ID tying all agent activity to a session
-     * @return array<string, array{answer: string, model: string, response_time_ms: int, usage: array, correlation_id: string}>
+     * @return array<string, array{answer: string, model: string, response_time_ms: int, usage: array, correlation_id: string, error?: string}>
      * @throws \RuntimeException If no agents are configured
      */
     public function research(string $question, string $correlationId): array
@@ -168,27 +168,50 @@ class AgentManager
                 ]);
             }
 
-            // D-02: fresh ResearchAgent instance per research() call
-            $agentLogger = new Logger($this->logFile, $agentName, $correlationId);
+            try {
+                // D-02: fresh ResearchAgent instance per research() call
+                $agentLogger = new Logger($this->logFile, $agentName, $correlationId);
 
-            $agent = new ResearchAgent(
-                $agentInfo['dir'],
-                $this->configLoader,
-                $agentLogger
-            );
+                $agent = new ResearchAgent(
+                    $agentInfo['dir'],
+                    $this->configLoader,
+                    $agentLogger
+                );
 
-            // Configure tools based on agent config
-            $toolRegistry = $this->configureTools($http, $agentInfo['config'], $agentLogger);
-            $agent->setToolRegistry($toolRegistry);
+                // Configure tools based on agent config
+                $toolRegistry = $this->configureTools($http, $agentInfo['config'], $agentLogger);
+                $agent->setToolRegistry($toolRegistry);
 
-            $result = $agent->research($question);
-            $results[$agentName] = $result;
+                $result = $agent->research($question);
+                $results[$agentName] = $result;
 
-            if ($this->logger) {
-                $this->logger->info('AgentManager: agent completed', [
-                    'agent'   => $agentName,
-                    'time_ms' => $result['response_time_ms'] ?? 0,
-                ]);
+                if ($this->logger) {
+                    $this->logger->info('AgentManager: agent completed', [
+                        'agent'   => $agentName,
+                        'time_ms' => $result['response_time_ms'] ?? 0,
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                $results[$agentName] = [
+                    'answer'           => 'Agent ' . $agentName . ' failed: ' . $e->getMessage(),
+                    'model'            => $agentInfo['config']['model'] ?? 'unknown',
+                    'response_time_ms'  => 0,
+                    'usage'            => [
+                        'prompt_tokens'     => 0,
+                        'completion_tokens' => 0,
+                        'total_tokens'      => 0,
+                    ],
+                    'correlation_id'   => $correlationId,
+                    'error'            => $e->getMessage(),
+                ];
+
+                if ($this->logger) {
+                    $this->logger->error('AgentManager: agent failed', [
+                        'agent'          => $agentName,
+                        'error'          => $e->getMessage(),
+                        'correlation_id' => $correlationId,
+                    ]);
+                }
             }
         }
 
