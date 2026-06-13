@@ -25,7 +25,12 @@ Build a multi-agent research and debate system in Vanilla PHP, starting with a s
   3. System logs all operations with timestamps and correlation IDs, separated by channel (agent, system, arbitrator)
   4. Config validation reports missing fields or invalid values with clear, actionable error messages at startup
   5. User can run a health check command (`php bin/check-config`) that verifies all configs are valid
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] `01-01-PLAN.md` — Walking Skeleton Foundation: project structure, SKELETON.md, agent config files (CONF-01..05)
+- [ ] `01-02-PLAN.md` — Config Loader and Logger: autoloader, config loading with aggregate validation, channel-prefixed logger (CONF-06, CONF-07, LOG-01, LOG-02)
+- [ ] `01-03-PLAN.md` — LLM Integration and CLI: LlmClient via curl, ResearchAgent, research.php CLI, bin/check-config (TOOL-01)
 
 ### Phase 2: Agent Runtime & Tool Integration
 **Goal**: Agents gain web search and scientific paper search capabilities through provider abstractions, managed by LlmClient and AgentManager with HTTP-level timeout enforcement.
@@ -87,7 +92,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Single-Agent Baseline | TBD | Not started | - |
+| 1. Foundation & Single-Agent Baseline | 3 plans | In planning | - |
 | 2. Agent Runtime & Tool Integration | TBD | Not started | - |
 | 3. Orchestration Pipeline | TBD | Not started | - |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |
