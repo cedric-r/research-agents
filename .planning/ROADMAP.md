@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Single-Agent Baseline | 3/3 | Complete    | 2026-06-13 |
-| 2. Agent Runtime & Tool Integration | 1/3 | In Progress|  |
+| 2. Agent Runtime & Tool Integration | 2/3 | In Progress|  |
 | 3. Orchestration Pipeline | TBD | Not started | - |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |
 | 5. Storage & Presentation | TBD | Not started | - |
