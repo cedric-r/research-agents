@@ -89,8 +89,8 @@ Plans:
 
 Plans:
 
-- [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
-- [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
+- [ ] `04-01-PLAN.md` -- Core Debate Protocol: DiversityAnalyzer, ResearchAgent::critique(), Arbitrator debate methods (Wave 1)
+- [ ] `04-02-PLAN.md` -- Output Formatting, Config Schema, Edge Case Hardening (Wave 2)
 
 ### Phase 5: Storage & Presentation
 
@@ -111,8 +111,8 @@ Plans:
 
 Plans:
 
-- [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
-- [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
+- [ ] `05-01-PLAN.md` -- Session Storage & CLI REPL (Wave 1)
+- [ ] `05-02-PLAN.md` -- Web REPL & Transcript Viewing (Wave 2)
 
 **UI hint**: yes
 
