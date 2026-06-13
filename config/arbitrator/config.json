@@ -1,0 +1,40 @@
+{
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash",
+    "api_key": "",
+    "note": "Phase 4: Debate protocol configuration -- scoring, judge, weights, diversity, critique sections added",
+
+    "max_concurrent_agents": 5,
+    "agent_timeout": 60,
+
+    "scoring": {
+        "model": "deepseek-v4-flash",
+        "temperature": 0.0,
+        "rubric_prompt": "/mnt/katsumi/data/research-agents/config/arbitrator/scoring-prompt.txt"
+    },
+
+    "judge": {
+        "model": "deepseek-v4-flash",
+        "temperature": 0.3,
+        "max_candidates": 3
+    },
+
+    "weights": {
+        "quality": 0.50,
+        "critique": 0.30,
+        "diversity": 0.20
+    },
+
+    "diversity": {
+        "enabled": true,
+        "n_gram_size": 3,
+        "factor": 0.15,
+        "threshold": 0.70
+    },
+
+    "critique": {
+        "template_path": "/mnt/katsumi/data/research-agents/config/arbitrator/critique-template.txt",
+        "judge_prompt_path": "/mnt/katsumi/data/research-agents/config/arbitrator/judge-prompt.txt",
+        "timeout_seconds": 120
+    }
+}

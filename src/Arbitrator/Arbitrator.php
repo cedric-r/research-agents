@@ -110,6 +110,14 @@ class Arbitrator
             $config['agent_timeout'] = $defaults['agent_timeout'];
         }
 
+        // Validate Phase 4 nested config sections are arrays if present (ORCH-05, ORCH-08)
+        foreach (['scoring', 'judge', 'weights', 'diversity', 'critique'] as $section) {
+            if (isset($config[$section]) && !is_array($config[$section])) {
+                $this->logger->warn("Arbitrator config: '{$section}' must be an object, using defaults");
+                $config[$section] = [];
+            }
+        }
+
         return $config;
     }
 
