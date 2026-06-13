@@ -1,0 +1,3 @@
+# API key config files — contain sensitive credentials
+config/agents/*/config.json
+config/arbitrator/config.json

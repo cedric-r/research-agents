@@ -1,0 +1,7 @@
+{
+    "tools": {
+        "llm_only": true,
+        "web_search": false,
+        "paper_search": false
+    }
+}

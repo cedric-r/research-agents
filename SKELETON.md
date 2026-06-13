@@ -1,57 +1,77 @@
-# Walking Skeleton — ResearchAgents
+# ResearchAgents -- Walking Skeleton
 
 **Phase:** 1
 **Generated:** 2026-06-13
 
-## Capability Proven End-to-End
+## Capability Statement
 
-> A user can run `php research.php "question"` from the command line and receive a research answer produced by an LLM agent configured with a provider model, API key, and personality. The answer includes metadata (model name, response time, token usage) and all operations are logged with timestamps and correlation IDs.
+A user can run `php research.php "question"` from the command line and receive a research answer produced by an LLM agent configured with a provider model, API key, and personality.
 
 ## Architectural Decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Framework | Vanilla PHP (no Laravel/Symfony) | All needed capabilities (curl, JSON, file I/O, argv) are built into PHP 8.5.4. A framework adds 1000s of files for zero benefit in a CLI-first, single-user research tool. |
-| Dependency strategy | Zero external dependencies for Phase 1. No Composer. | PHP 8.5.4 ships with all extensions needed: curl, json, mbstring, readline, pcntl, posix, sockets. Adding packages before Layer 1 is validated adds risk without proven need. Packages deferred per known pain points. |
-| Config format | JSON default (config.json, preferences.json). PHP arrays also accepted (detected by .php extension). | JSON is universal, readable, and toolable. PHP arrays provide zero-parse-overhead alternative for users who prefer them. Loader detects format by file extension per D-01. |
-| Autoloading | PSR-4-like via spl_autoload_register. App\ namespace maps to src/. | Zero-dependency autoloading. Every modern PHP project needs autoloading to avoid require_once chains. PHP built-in spl_autoload_register is reliable and well-documented. |
-| Logging | Custom Logger class (~70 lines). Human-readable formatted text with channel prefix. Single application log for Phase 1. | Bundled into the zero-dependency approach. Monolog adds value at scale (rotation, structured output, multiple handlers) but is premature for Phase 1's single-file, single-process use case. |
-| LLM access | Single LlmClient class with provider adapter pattern. Provider differences (base URL, auth, model ID) handled via config values, not separate classes. | Avoids class explosion (DeepseekClient, OpenRouterClient, etc.) when adding providers. All OpenAI-compatible providers use POST /chat/completions with Bearer auth — only base URL and model name differ. |
-| CLI entry point | Flat script research.php at project root. Direct question argument only. | Simplest possible user-facing interface. Interactive REPL deferred to Phase 5 per D-08. Keeping it flat prevents over-engineering the entry point. |
-| SOUL.md format | Structured markdown sections: ### Identity, ### Values, ### Instructions, ### Constraints. Concatenated as system prompt. | Structured sections give the personality prompt clear semantics without needing a parser. Sections are concatenated as-is into the LLM system message per D-10. |
-| Log format | `[2026-06-13 14:30:00.123456] [CHANNEL] [LEVEL] [correlation_id] message {context}` | Simple, parsable, grep-friendly. Channels (SYSTEM, AGENT) enable log filtering without separate files. Microsecond precision for debugging timing issues. |
-| Directory layout | src/ organized by domain (Config/, Log/, LlmClient/, Agent/). Config/ with per-agent directories. Bin/ for utility scripts. | Domain-driven package layout prevents circular dependencies and makes it clear where new code belongs. Flat config/agents/ enables agent scanning in Phase 2. |
+| # | Decision | Rationale | Outcome |
+|---|----------|-----------|---------|
+| 1 | Framework: Vanilla PHP (no Laravel/Symfony) | Zero framework overhead. All needed capabilities (curl, json, readline, pcntl, posix, sockets) built into PHP 8.5.4. No compilation or JVM needed. | `src/` organized by domain. Flat project structure. |
+| 2 | Dependency strategy: Zero external dependencies for Phase 1 | No Composer. PHP extensions only. Avoids dependency chain complexity until justified. | curl, json, mbstring, readline, pcntl, posix, sockets confirmed available on PHP 8.5.4 runtime. |
+| 3 | Config format: JSON default (config.json, preferences.json). PHP arrays also accepted. | JSON is universally readable and toolable. PHP arrays provide zero-parse-overhead alternative. Loader detects format by file extension (.json vs .php) per D-01. | `config/agents/{name}/config.json`, `preferences.json`. |
+| 4 | Autoloading: PSR-4-like via spl_autoload_register. `App\` namespace maps to `src/`. | Zero-dependency autoloading avoids require_once chains. PHP built-in spl_autoload_register is reliable and well-documented. | One-time setup in entry point. No Composer autoloader needed. |
+| 5 | Logging: Custom Logger class (~70 lines). Human-readable formatted text with channel prefix. Single application log for Phase 1. | Bundled into zero-dependency approach. Monolog adds value at scale (rotation, structured output, multiple handlers) but is premature for Phase 1's single-file, single-process use case. | `logs/research.log`. Format: `[timestamp] [CHANNEL] [LEVEL] [correlation_id] message {context}`. |
+| 6 | LLM access: Single LlmClient with provider adapter pattern. Provider differences handled via config values, not separate classes. | Avoids class explosion (DeepseekClient, OpenRouterClient, etc.) when adding providers. All OpenAI-compatible providers use POST /chat/completions with Bearer auth -- only base URL and model name differ. | One class, config-driven. Provider config specifies `provider`, `model`, `api_key` per D-06. |
+| 7 | CLI entry point: Flat script `research.php` at project root. Direct question argument only. | Simplest possible user-facing interface. Interactive REPL deferred to Phase 5 per D-08. Keeping it flat prevents over-engineering the entry point. | `php research.php "your question"`. |
+| 8 | SOUL.md format: Structured markdown sections per D-09. | Sections: `### Identity`, `### Values`, `### Instructions`, `### Constraints`. Read as-is and concatenated into LLM system prompt per D-10. | Clear separation of agent personality from code. No parsing needed. |
+| 9 | Logging format with microsecond precision and correlation ID. | `[YYYY-MM-DD HH:MM:SS.uuuuuu] [CHANNEL] [LEVEL] [correlation_id] message {context}`. Channels (SYSTEM, AGENT) enable log filtering without separate files. Correlation ID enables session tracing. | Single log file for Phase 1 per D-13. |
+| 10 | Directory layout: `src/` organized by domain. | `src/Config/`, `src/Log/`, `src/LlmClient/`, `src/Agent/`. `config/` with per-agent directories. `logs/`, `bin/` at project root. | Domain-driven layout prevents circular dependencies. Flat `config/agents/` enables agent scanning in Phase 2. |
 
-## Stack Touched in Phase 1
+## Directory Structure
 
-- [x] Project scaffold — directory structure, SKELETON.md, .gitignore
-- [x] Routing — research.php CLI entry point (`php research.php "question"`)
-- [x] Data layer — JSON/PHP array config files loaded by ConfigLoader
-- [x] LLM — Single provider call via curl (DeepSeek or OpenRouter)
-- [x] UI — CLI output with answer + metadata
-- [x] Deployment — Documented local run command: `php research.php "question"`
-- [x] Logging — Channel-prefixed file logger to logs/research.log
-- [x] Config validation — bin/check-config health check script
+```
+research-agents/
+  research.php           -- CLI entry point
+  SKELETON.md            -- This file
+  src/
+    Config/
+    Log/
+    LlmClient/
+    Agent/
+  config/
+    agents/
+      researcher/        -- Agent config: config.json, SOUL.md, preferences.json
+    arbitrator/          -- Arbitrator config: config.json (Phase 3+)
+  logs/                  -- Application log
+  bin/                   -- Utility scripts
+```
 
-## Out of Scope (Deferred to Later Slices)
+## Out of Scope (Phase 1)
 
-| Feature | Deferred To | Reason |
-|---------|-------------|--------|
-| AgentManager / agent discovery | Phase 2 | Phase 1 uses hardcoded path to single agent. Dynamic directory scanning comes when multiple agents exist. |
-| Web search tool | Phase 2 | Proves agent can research before adding tool access. |
-| Paper search (arXiv + Semantic Scholar) | Phase 2 | Search provider abstraction deferred until first search integration. |
+| Item | Deferred To | Rationale |
+|------|-------------|-----------|
+| Interactive CLI REPL | Phase 5 | Phase 1 uses direct argument per D-08. |
+| Web REPL | Phase 5 | Phase 1 is CLI-only. |
 | Multi-agent orchestration / Arbitrator | Phase 3 | No need for orchestration until multiple agents exist. |
+| Web search tool | Phase 2 | Proves agent can research before adding tool access. |
+| Paper search (arXiv, Semantic Scholar) | Phase 2 | Search provider abstraction deferred until first search integration. |
 | Debate rounds | Phase 4 | Proven single-agent quality comes before debate mechanics. |
 | Session persistence (markdown transcripts) | Phase 5 | File-per-session storage adds value only when sessions have content worth persisting. |
-| CLI REPL (interactive mode) | Phase 5 | Per D-08. Phase 1 single-shot CLI validates core value before building interactive UX. |
-| Web REPL | Phase 5 | Phase 1 CLI-only. Web interface adds presentation on top of proven pipeline. |
-| PHPUnit/Composer | Phase 2+ | Zero-dependency Phase 1 proves the concept. Composer + PHPUnit added when complexity justifies automated testing. |
+| PHPUnit / Composer | Phase 2+ | Zero-dependency Phase 1 proves the concept first. |
 
-## Subsequent Slice Plan
+## Key Links
 
-Each later phase adds one vertical slice on top of this skeleton without altering its architectural decisions:
+| Artifact | Consumers | Resolution |
+|----------|-----------|------------|
+| `config/agents/researcher/config.json` | `src/Config/Loader.php` | Loaded by ConfigLoader during ResearchAgent construction. |
+| `config/agents/researcher/SOUL.md` | `src/Agent/ResearchAgent.php` | Read and used as system prompt for LLM calls per D-10. |
+| `config/agents/researcher/preferences.json` | `src/Agent/ResearchAgent.php` | Tool access flags read during agent initialization. |
+| `config/arbitrator/config.json` | `src/Config/Loader.php` | Placeholder config loaded in Phase 3+ for arbitrator. |
 
-- **Phase 2**: Agent Runtime & Tool Integration — AgentManager discovers agents, LlmClient gains provider abstraction, web search and paper search tools, HTTP timeout architecture.
-- **Phase 3**: Orchestration Pipeline — Arbitrator distributes questions to multiple agents, enforces per-step timeouts, collects Round 1 answers with structural handoffs.
-- **Phase 4**: Debate System & Echo Chamber Prevention — 2-round debate with quality evaluation, peer critique, reasoned answer selection, diversity mechanisms.
-- **Phase 5**: Storage & Presentation — Session persistence as markdown transcripts, CLI REPL with readline, web REPL with SSE streaming.
+## Configuration Security
+
+- Config files containing API keys (`config.json`) must be gitignored.
+- File permissions should be restricted: `chmod 600 config/agents/*/config.json`.
+- API keys must not appear in log output or error messages per D-14.
+
+## Threat Model
+
+| Threat | Category | Disposition | Mitigation |
+|--------|----------|-------------|------------|
+| API key leakage via git | Information Disclosure | Mitigate | `config/*/config.json` in `.gitignore`. Document file permission requirement in README. |
+| Config file tampering | Tampering | Accept | Local-only files. No remote write access. Content loaded via `json_decode` from known paths only. |
