@@ -50,7 +50,12 @@ Plans:
   4. LlmClient handles LLM API calls with model/provider selection, supporting at minimum the provider configured in Phase 1
   5. HTTP socket-level timeouts are enforced on all external API calls — a hanging API does not freeze the system
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] `02-01-PLAN.md` — Infrastructure: HttpHelper, ToolRegistry, LlmClient refactor to centralized HTTP (TOOL-05, TOOL-08)
+- [ ] `02-02-PLAN.md` — Search Tools: WebSearch (Brave), AcademicSearch (arXiv+Semantic Scholar), ResearchAgent tool wiring (TOOL-02, TOOL-03, TOOL-04, TOOL-06, TOOL-07)
+- [ ] `02-03-PLAN.md` — AgentManager: multi-agent discovery, lifecycle, multi-agent CLI wiring (CONF-08)
 
 ### Phase 3: Orchestration Pipeline
 
@@ -108,8 +113,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Single-Agent Baseline | 3/3 | Complete | 2026-06-13 |
-| 2. Agent Runtime & Tool Integration | TBD | Not started | - |
+| 1. Foundation & Single-Agent Baseline | 3/3 | Complete    | 2026-06-13 |
+| 2. Agent Runtime & Tool Integration | 0/3 | Planned     | - |
 | 3. Orchestration Pipeline | TBD | Not started | - |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |
 | 5. Storage & Presentation | TBD | Not started | - |
