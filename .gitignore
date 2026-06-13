@@ -1,3 +1,9 @@
 # API key config files — contain sensitive credentials
 config/agents/*/config.json
 config/arbitrator/config.json
+
+# Composer dependencies
+vendor/
+
+# PHPUnit cache
+.phpunit.cache/
