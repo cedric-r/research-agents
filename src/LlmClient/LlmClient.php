@@ -106,8 +106,9 @@ class LlmClient
      */
     public function getLastResponseInfo(): array
     {
-        $usage = $this->lastResponse['usage'] ?? [];
-        $model = $this->lastResponse['model'] ?? $this->model;
+        $response = $this->lastResponse ?? [];
+        $usage = $response['usage'] ?? [];
+        $model = $response['model'] ?? $this->model;
 
         return [
             'model'            => $model,

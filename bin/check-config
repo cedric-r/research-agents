@@ -19,6 +19,7 @@ $agentDirs = glob($agentsDir . '/*', GLOB_ONLYDIR);
 
 if ($agentDirs === false || $agentDirs === []) {
     echo "[INFO] No agent directories found under {$agentsDir}" . PHP_EOL;
+    exit(0);
 }
 
 foreach ($agentDirs as $agentDir) {

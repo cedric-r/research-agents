@@ -95,7 +95,10 @@ class HttpHelper
             if ($status === CURLM_CALL_MULTI_PERFORM) {
                 continue;
             }
-            curl_multi_select($multiHandle, 5);
+            $selRet = curl_multi_select($multiHandle, 5);
+            if ($selRet === -1) {
+                usleep(10000); // 10ms fallback if select interrupted
+            }
         } while ($running > 0);
 
         foreach ($curlHandles as $key => $ch) {

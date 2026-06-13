@@ -17,7 +17,7 @@ use App\Log\Logger;
  */
 class AcademicSearch
 {
-    private const ARXIV_BASE = 'http://export.arxiv.org/api/query';
+    private const ARXIV_BASE = 'https://export.arxiv.org/api/query';
     private const SEMANTIC_SCHOLAR_BASE = 'https://api.semanticscholar.org/graph/v1/paper/search';
 
     private HttpHelper $http;
@@ -257,7 +257,7 @@ class AcademicSearch
                 'abstract'      => mb_substr($item['abstract'] ?? '', 0, 300),
                 'year'          => (int) ($item['year'] ?? 0),
                 'authors'       => $authors,
-                'url'           => sprintf('https://api.semanticscholar.org/%s', $item['paperId'] ?? ''),
+                'url'           => sprintf('https://www.semanticscholar.org/paper/%s', $item['paperId'] ?? ''),
                 'doi'           => $externalIds['DOI'] ?? '',
                 'citationCount' => (int) ($item['citationCount'] ?? 0),
                 'arxivId'       => $arxivId,
@@ -302,6 +302,7 @@ class AcademicSearch
                 // Keep the entry with more complete data
                 if (!empty($paper['abstract']) && empty($existing['abstract'])) {
                     $deduped[$key] = $paper;
+                    $seen[$key] = $paper;
                 }
                 continue;
             }
