@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace App\LlmClient;
 
+use App\Http\HttpHelper;
+use App\Http\HttpException;
+
 class LlmClient
 {
     private string $baseUrl;
     private string $apiKey;
     private string $model;
+    private HttpHelper $http;
     private ?array $lastResponse = null;
     private ?int $lastResponseTimeMs = null;
 
-    public function __construct(array $providerConfig)
+    /**
+     * @param array           $providerConfig Configuration with base_url, api_key, model
+     * @param HttpHelper|null $http           Optional HTTP client (defaults to new instance)
+     */
+    public function __construct(array $providerConfig, ?HttpHelper $http = null)
     {
         $this->baseUrl = rtrim($providerConfig['base_url'], '/');
         $this->apiKey  = $providerConfig['api_key'];
         $this->model   = $providerConfig['model'];
+        $this->http    = $http ?? new HttpHelper();
     }
 
     /**
@@ -36,62 +45,43 @@ class LlmClient
             'max_tokens'  => 4096,
         ], $options);
 
+        $url = $this->baseUrl . '/chat/completions';
+        $headers = [
+            'Authorization: Bearer ' . $this->apiKey,
+        ];
+
+        $startTime = (int) (microtime(true) * 1000);
+
         try {
-            $payloadJson = json_encode($payload, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
+            // HttpHelper::post() JSON-encodes the payload and adds Content-Type header
+            $response = $this->http->post($url, $payload, $headers);
+        } catch (HttpException $e) {
             throw new LlmException(
-                "Failed to serialize request payload: " . $e->getMessage(),
+                'HTTP request failed: ' . $e->getMessage(),
                 0,
                 $e
             );
         }
 
-        $ch = curl_init($this->baseUrl . '/chat/completions');
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $payloadJson,
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $this->apiKey,
-            ],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => $options['timeout'] ?? 60,
-            CURLOPT_CONNECTTIMEOUT => 10,
-            CURLOPT_USERAGENT      => 'ResearchAgents/1.0',
-        ]);
-
-        $startTime = (int) (microtime(true) * 1000);
-        $response = curl_exec($ch);
         $endTime = (int) (microtime(true) * 1000);
         $this->lastResponseTimeMs = $endTime - $startTime;
 
-        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        $curlErrno = curl_errno($ch);
-        curl_close($ch);
+        $httpCode = $response['http_code'];
+        $responseBody = $response['body'];
 
-        // Pitfall 3: curl_exec returns false, not empty string, on network failure
-        if ($response === false) {
-            throw new LlmException(
-                "HTTP request failed (errno {$curlErrno}): {$curlError}"
-            );
-        }
-
-        // Check HTTP status before parsing JSON — but also pass through for error body
+        // Check HTTP status before parsing JSON — truncate body to 500 chars (T-01-07)
         if ($httpCode !== 200) {
-            // Truncate response body to 500 chars to avoid leaking API keys (T-01-07)
-            $truncated = mb_substr($response, 0, 500);
+            $truncated = mb_substr($responseBody, 0, 500);
             throw new LlmException(
                 "API returned HTTP {$httpCode}: {$truncated}"
             );
         }
 
-        // Pitfall 2: json_decode can throw on malformed JSON
         try {
-            $result = json_decode($response, true, 32, JSON_THROW_ON_ERROR);
+            $result = json_decode($responseBody, true, 32, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
             throw new LlmException(
-                "Malformed JSON response from API: " . $e->getMessage(),
+                'Malformed JSON response from API: ' . $e->getMessage(),
                 0,
                 $e
             );
