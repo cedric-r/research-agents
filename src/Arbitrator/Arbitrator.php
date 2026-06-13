@@ -22,6 +22,20 @@ use App\Log\Logger;
  * does not block others. Temp files in sys_get_temp_dir() provide
  * inter-process result transfer that survives child SIGKILL.
  *
+ * # 4-Layer Timeout Architecture (ORCH-10)
+ *
+ * - **Layer 1 (PHP max_execution_time):** Inactive in CLI mode
+ *   (default 0/unlimited). No code enforcement (D-13).
+ * - **Layer 2 (HTTP socket timeout):** HttpHelper CURLOPT_TIMEOUT=60s,
+ *   CURLOPT_CONNECTTIMEOUT=10s. Active from Phase 2 (D-14).
+ * - **Layer 3 (stream-idle watchdog):** Deferred to v2 (no streaming
+ *   LLM responses yet) (D-15).
+ * - **Layer 4 (cooperative agent-step deadline):**
+ *   ResearchAgent::research($deadline) checks before each major step
+ *   (tool context building, LLM call) (D-16).
+ * - **Batch alarm:** pcntl_alarm($batchTimeout) + SIGALRM handler as
+ *   safety net (D-12).
+ *
  * @package App\Arbitrator
  */
 class Arbitrator
@@ -178,7 +192,19 @@ class Arbitrator
     private function executeBatchParallel(string $question, array $agents, array $batch): array
     {
         $children = [];
+        $childDeadlines = [];
         $results = [];
+
+        // Per-child deadline tracking (D-09, D-12)
+        $batchTimeout = $this->config['agent_timeout'] ?? 60;
+        $batchStart = microtime(true);
+
+        // Register SIGALRM handler for batch-level timeout safety net (D-12)
+        // Handler sets a boolean flag only -- no I/O, no complex logic (T-03-07)
+        $batchTimedOut = false;
+        pcntl_signal(SIGALRM, function () use (&$batchTimedOut): void {
+            $batchTimedOut = true;
+        });
 
         // Fork children for this batch
         foreach ($batch as $agentName) {
@@ -202,25 +228,33 @@ class Arbitrator
 
             if ($pid === 0) {
                 // ---- CHILD PROCESS ----
-                $this->runChildProcess($question, $agentName, $agentInfo, $sanitizedName);
+                $deadline = microtime(true) + $batchTimeout;
+                $this->runChildProcess($question, $agentName, $agentInfo, $sanitizedName, $deadline);
                 exit(0);
             }
 
             // ---- PARENT ----
+            $deadline = microtime(true) + $batchTimeout;
             $children[$pid] = [
                 'name'           => $agentName,
                 'sanitized_name' => $sanitizedName,
+                'deadline'       => $deadline,
             ];
+            $childDeadlines[$pid] = $deadline;
 
             if ($this->logger) {
                 $this->logger->info('Arbitrator: forking agent ' . $agentName . ' (pid ' . $pid . ')');
             }
         }
 
-        // Wait loop: poll for children to complete
+        // Set batch-level timeout alarm (D-12)
+        pcntl_alarm($batchTimeout);
+
+        // Wait loop: poll for children to complete with per-child deadline enforcement
         $running = $children;
         while (!empty($running)) {
             foreach ($running as $pid => $info) {
+                // Check existing completion first
                 $reaped = pcntl_waitpid($pid, $status, WNOHANG);
 
                 if ($reaped > 0 || $reaped === -1) {
@@ -240,13 +274,95 @@ class Arbitrator
                     }
 
                     unset($running[$pid]);
+                    unset($childDeadlines[$pid]);
+                    continue;
                 }
+
+                // Per-child deadline enforcement (D-09, D-12)
+                if (isset($childDeadlines[$pid]) && microtime(true) > $childDeadlines[$pid]) {
+                    posix_kill($pid, SIGTERM);      // Try graceful shutdown
+                    usleep(2000000);                  // 2s grace for partial answer write
+
+                    $reaped2 = pcntl_waitpid($pid, $status, WNOHANG);
+                    if ($reaped2 === 0) {
+                        posix_kill($pid, SIGKILL);    // Force kill
+                        pcntl_waitpid($pid, $status); // Reap zombie
+                    }
+
+                    // Read result (may be partial if child wrote before kill)
+                    $result = $this->readTempFile($info['sanitized_name'], $pid);
+                    if ($result === null) {
+                        // D-11: No temp file -- child was killed before any write
+                        $result = [
+                            'answer'           => '[' . $info['name'] . ' timed out -- no partial answer]',
+                            'model'            => $agents[$info['name']]['config']['model'] ?? 'unknown',
+                            'response_time_ms' => (int) ($batchTimeout * 1000),
+                            'usage'            => [
+                                'prompt_tokens'     => 0,
+                                'completion_tokens' => 0,
+                                'total_tokens'      => 0,
+                            ],
+                            'correlation_id'   => $this->correlationId,
+                        ];
+                    }
+                    $results[$info['name']] = $result;
+
+                    // Clean up temp file if it was written
+                    $this->cleanTempFile($info['sanitized_name'], $pid);
+
+                    if ($this->logger) {
+                        $this->logger->info('Arbitrator: agent ' . $info['name'] . ' timed out');
+                    }
+
+                    unset($running[$pid]);
+                    unset($childDeadlines[$pid]);
+                }
+            }
+
+            // Batch-level timeout check (SIGALRM safety net, D-12)
+            if ($batchTimedOut) {
+                if ($this->logger) {
+                    $this->logger->warn('Arbitrator: batch timed out, killing remaining children');
+                }
+                foreach ($running as $pid => $info) {
+                    posix_kill($pid, SIGTERM);
+                }
+                usleep(2000000);
+                foreach ($running as $pid => $info) {
+                    posix_kill($pid, SIGKILL);
+                    pcntl_waitpid($pid, $status);
+
+                    $result = $this->readTempFile($info['sanitized_name'], $pid);
+                    if ($result === null) {
+                        $result = [
+                            'answer'           => '[' . $info['name'] . ' timed out -- no partial answer]',
+                            'model'            => $agents[$info['name']]['config']['model'] ?? 'unknown',
+                            'response_time_ms' => (int) ($batchTimeout * 1000),
+                            'usage'            => [
+                                'prompt_tokens'     => 0,
+                                'completion_tokens' => 0,
+                                'total_tokens'      => 0,
+                            ],
+                            'correlation_id'   => $this->correlationId,
+                        ];
+                    }
+                    $results[$info['name']] = $result;
+                    $this->cleanTempFile($info['sanitized_name'], $pid);
+                }
+                $running = [];
+                $childDeadlines = [];
+                break;
             }
 
             if (!empty($running)) {
                 usleep(100000); // 100ms poll interval
             }
         }
+
+        // Cancel batch alarm -- all children in this batch completed
+        pcntl_alarm(0);
+        // Reset SIGALRM to default
+        pcntl_signal(SIGALRM, SIG_DFL);
 
         return $results;
     }
@@ -306,12 +422,24 @@ class Arbitrator
      *
      * Resets inherited signal handlers, creates fresh instances,
      * runs research, writes result to temp file, then exits.
+     *
+     * @param float $deadline Absolute Unix timestamp for Layer 4 cooperative deadline (D-16)
      */
-    private function runChildProcess(string $question, string $agentName, array $agentInfo, string $sanitizedName): void
+    private function runChildProcess(string $question, string $agentName, array $agentInfo, string $sanitizedName, float $deadline): void
     {
         // Reset inherited signal handlers (RESEARCH.md Pitfall 3)
         pcntl_signal(SIGALRM, SIG_DFL);
         pcntl_alarm(0);
+
+        // Enable async signal dispatch (zero-overhead, PHP 7.1+)
+        pcntl_async_signals(true);
+
+        // Flag-based SIGTERM handler (D-10, per RESEARCH.md -- NO file I/O in handler)
+        // T-03-08, T-03-13: handler sets flag only; deferred write in main context
+        $timedOut = false;
+        pcntl_signal(SIGTERM, function (int $signo) use (&$timedOut): void {
+            $timedOut = true;  // ONLY set flag -- deferred I/O in main context
+        });
 
         try {
             $http = new HttpHelper();
@@ -335,7 +463,13 @@ class Arbitrator
             );
             $agent->setToolRegistry($toolRegistry);
 
-            $result = $agent->research($question);
+            // Check if SIGTERM was received before research started
+            if ($timedOut) {
+                throw new \RuntimeException('Timed out before research started');
+            }
+
+            // Pass deadline for Layer 4 cooperative check (D-16)
+            $result = $agent->research($question, $deadline);
 
             // Write success result to temp file
             $this->writeTempFile($sanitizedName, [
@@ -347,20 +481,39 @@ class Arbitrator
                 'correlation_id'   => $result['correlation_id'],
             ]);
         } catch (\Throwable $e) {
-            // Write error result to temp file
-            $this->writeTempFile($sanitizedName, [
-                'status'           => 'killed',
-                'answer'           => 'Agent ' . $agentName . ' failed: ' . $e->getMessage(),
-                'model'            => $agentInfo['config']['model'] ?? 'unknown',
-                'response_time_ms' => 0,
-                'usage'            => [
-                    'prompt_tokens'     => 0,
-                    'completion_tokens' => 0,
-                    'total_tokens'      => 0,
-                ],
-                'correlation_id'   => $this->correlationId,
-                'error'            => $e->getMessage(),
-            ]);
+            if ($timedOut) {
+                // SIGTERM was received -- write partial answer from main context (safe)
+                // D-10: file_put_contents is NOT called in the signal handler.
+                // The handler only set a boolean flag; actual I/O happens here.
+                $partialResult = [
+                    'status'           => 'partial',
+                    'answer'           => '[Research interrupted by timeout]',
+                    'model'            => $agentInfo['config']['model'] ?? 'unknown',
+                    'response_time_ms' => 0,
+                    'usage'            => [
+                        'prompt_tokens'     => 0,
+                        'completion_tokens' => 0,
+                        'total_tokens'      => 0,
+                    ],
+                    'correlation_id'   => $this->correlationId,
+                ];
+                $this->writeTempFile($sanitizedName, $partialResult);
+            } else {
+                // Normal exception -- write error result
+                $this->writeTempFile($sanitizedName, [
+                    'status'           => 'killed',
+                    'answer'           => 'Agent ' . $agentName . ' failed: ' . $e->getMessage(),
+                    'model'            => $agentInfo['config']['model'] ?? 'unknown',
+                    'response_time_ms' => 0,
+                    'usage'            => [
+                        'prompt_tokens'     => 0,
+                        'completion_tokens' => 0,
+                        'total_tokens'      => 0,
+                    ],
+                    'correlation_id'   => $this->correlationId,
+                    'error'            => $e->getMessage(),
+                ]);
+            }
         }
     }
 
