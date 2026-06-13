@@ -43,7 +43,6 @@ Plans:
   5. HTTP socket-level timeouts are enforced on all external API calls -- a hanging API does not freeze the system
 
 **Plans**: 4 plans
-
 Plans:
 
 - [ ] `02-01-PLAN.md` — Infrastructure: HttpHelper, ToolRegistry, LlmClient refactor to centralized HTTP (TOOL-05, TOOL-08)
