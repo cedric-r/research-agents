@@ -8,6 +8,7 @@ use App\Config\Loader;
 use App\LlmClient\LlmClient;
 use App\LlmClient\LlmException;
 use App\Log\Logger;
+use App\Tool\ToolRegistry;
 
 class ResearchAgent
 {
@@ -17,6 +18,7 @@ class ResearchAgent
     private LlmClient $llm;
     private ?Logger $logger;
     private string $correlationId;
+    private ?ToolRegistry $toolRegistry = null;
 
     /**
      * @param string           $agentDir     Path to the agent's config directory
@@ -67,6 +69,76 @@ class ResearchAgent
     }
 
     /**
+     * Inject the tool registry for tool-enabled research.
+     *
+     * Must be called before research() for tools to be available.
+     * Tools are configured via preferences.json per agent.
+     */
+    public function setToolRegistry(ToolRegistry $registry): void
+    {
+        $this->toolRegistry = $registry;
+    }
+
+    /**
+     * Build tool context block from configured tools.
+     *
+     * Checks preferences.json['tools'] to determine which tools to run:
+     * - 'llm_only': if true, skip all tools
+     * - 'web_search': if true, run web_search with the question
+     * - 'paper_search': if true, run paper_search with the question
+     *
+     * @param  string $question The user's research question
+     * @return string           Combined tool context, or empty string if no tools configured
+     */
+    private function buildToolContext(string $question): string
+    {
+        if ($this->toolRegistry === null) {
+            return '';
+        }
+
+        $tools = $this->preferences['tools'] ?? [];
+
+        // llm_only flag skips all tool queries
+        if (!empty($tools['llm_only'])) {
+            return '';
+        }
+
+        $contextParts = [];
+
+        if (!empty($tools['web_search'])) {
+            try {
+                $result = $this->toolRegistry->run('web_search', ['q' => $question]);
+                if ($result !== '') {
+                    $contextParts[] = $result;
+                }
+            } catch (\Throwable $e) {
+                if ($this->logger) {
+                    $this->logger->warn('ResearchAgent: web_search failed', [
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+
+        if (!empty($tools['paper_search'])) {
+            try {
+                $result = $this->toolRegistry->run('paper_search', ['q' => $question]);
+                if ($result !== '') {
+                    $contextParts[] = $result;
+                }
+            } catch (\Throwable $e) {
+                if ($this->logger) {
+                    $this->logger->warn('ResearchAgent: paper_search failed', [
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+
+        return implode("\n\n", $contextParts);
+    }
+
+    /**
      * Run research on a question and return structured result with metadata.
      *
      * @param  string $question Research question (capped at 2000 chars)
@@ -86,8 +158,15 @@ class ResearchAgent
             ]);
         }
 
+        // Build system content: soul + optional tool context
+        $systemContent = $this->soul;
+        $toolContext = $this->buildToolContext($question);
+        if ($toolContext !== '') {
+            $systemContent .= "\n\n" . $toolContext;
+        }
+
         $messages = [
-            ['role' => 'system', 'content' => $this->soul],
+            ['role' => 'system', 'content' => $systemContent],
             ['role' => 'user',   'content' => $question],
         ];
 
