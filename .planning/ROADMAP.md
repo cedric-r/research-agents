@@ -45,10 +45,10 @@ Plans:
 **Plans**: 4 plans
 Plans:
 
-- [ ] `02-01-PLAN.md` — Infrastructure: HttpHelper, ToolRegistry, LlmClient refactor to centralized HTTP (TOOL-05, TOOL-08)
-- [ ] `02-02-PLAN.md` — Search Tools: WebSearch (Brave), AcademicSearch (arXiv+Semantic Scholar), ResearchAgent tool wiring (TOOL-02, TOOL-03, TOOL-04, TOOL-06, TOOL-07)
-- [ ] `02-03-PLAN.md` — AgentManager: multi-agent discovery, lifecycle, multi-agent CLI wiring (CONF-08)
-- [ ] `02-04-PLAN.md` — Gap Closure: per-agent error isolation in AgentManager, 6 code review fixes (CONF-08, TOOL-05, TOOL-07, TOOL-08)
+- [x] `02-01-PLAN.md` — Infrastructure: HttpHelper, ToolRegistry, LlmClient refactor to centralized HTTP (TOOL-05, TOOL-08)
+- [x] `02-02-PLAN.md` — Search Tools: WebSearch (Brave), AcademicSearch (arXiv+Semantic Scholar), ResearchAgent tool wiring (TOOL-02, TOOL-03, TOOL-04, TOOL-06, TOOL-07)
+- [x] `02-03-PLAN.md` — AgentManager: multi-agent discovery, lifecycle, multi-agent CLI wiring (CONF-08)
+- [x] `02-04-PLAN.md` — Gap Closure: per-agent error isolation in AgentManager, 6 code review fixes (CONF-08, TOOL-05, TOOL-07, TOOL-08)
 
 ### Phase 3: Orchestration Pipeline
 
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Single-Agent Baseline | 3/3 | Complete | 2026-06-13 |
-| 2. Agent Runtime & Tool Integration | 3/4 | Executing | - |
+| 2. Agent Runtime & Tool Integration | 4/4 | Complete   | 2026-06-13 |
 | 3. Orchestration Pipeline | TBD | Not started | - |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |
 | 5. Storage & Presentation | TBD | Not started | - |
