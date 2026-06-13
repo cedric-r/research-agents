@@ -28,6 +28,50 @@ switch ($path) {
         echo json_encode(['status' => 'ok', 'data' => ['key' => 'value']]);
         break;
 
+    case '/chat/completions':
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+        // Simulate auth failure
+        if (str_contains($authHeader, 'wrong-key')) {
+            http_response_code(401);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'error' => [
+                    'message' => 'Invalid API key',
+                    'type'    => 'authentication_error',
+                ],
+            ]);
+            break;
+        }
+
+        header('Content-Type: application/json');
+        $body = file_get_contents('php://input');
+        $payload = $body !== false ? json_decode($body, true) : [];
+        // Return a mock chat completion response
+        echo json_encode([
+            'id'      => 'chatcmpl-mock-' . bin2hex(random_bytes(4)),
+            'object'  => 'chat.completion',
+            'created' => time(),
+            'model'   => $payload['model'] ?? 'mock-model',
+            'choices' => [
+                [
+                    'index'         => 0,
+                    'finish_reason' => 'stop',
+                    'message'       => [
+                        'role'    => 'assistant',
+                        'content' => 'This is a mock answer to: ' . ($payload['messages'][count($payload['messages']) - 1]['content'] ?? ''),
+                    ],
+                ],
+            ],
+            'usage' => [
+                'prompt_tokens'     => 42,
+                'completion_tokens' => 17,
+                'total_tokens'      => 59,
+            ],
+        ]);
+        break;
+
     case '/echo':
         header('Content-Type: application/json');
         $body = file_get_contents('php://input');
