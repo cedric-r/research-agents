@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/src/bootstrap.php';
 
 use App\Agent\AgentManager;
+use App\Arbitrator\Arbitrator;
 use App\Config\Loader;
 use App\Log\Logger;
 
@@ -45,7 +46,13 @@ try {
         $logger
     );
 
-    $results = $agentManager->research($question, $correlationId);
+    $arbitrator = new Arbitrator(
+        $agentManager,
+        $configLoader,
+        $logger
+    );
+
+    $results = $arbitrator->research($question, $correlationId);
 
     // Formatted output per agent (D-15, extended for multi-agent)
     $agentCount = count($results);
