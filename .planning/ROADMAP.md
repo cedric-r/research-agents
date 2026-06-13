@@ -68,8 +68,8 @@ Plans:
 **Plans**: 2 plans
 Plans:
 
-- [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
-- [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
+- [x] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
+- [x] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
 
 ### Phase 4: Debate System & Echo Chamber Prevention
 
@@ -125,6 +125,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation & Single-Agent Baseline | 3/3 | Complete | 2026-06-13 |
 | 2. Agent Runtime & Tool Integration | 4/4 | Complete   | 2026-06-13 |
-| 3. Orchestration Pipeline | 1/2 | In Progress|  |
+| 3. Orchestration Pipeline | 2/2 | Complete   | 2026-06-13 |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |
 | 5. Storage & Presentation | TBD | Not started | - |
