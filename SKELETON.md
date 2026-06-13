@@ -1,11 +1,17 @@
 # ResearchAgents -- Walking Skeleton
 
-**Phase:** 1
+**Phase:** 5 (complete)
 **Generated:** 2026-06-13
+**Updated:** 2026-06-13
 
 ## Capability Statement
 
-A user can run `php research.php "question"` from the command line and receive a research answer produced by an LLM agent configured with a provider model, API key, and personality.
+A user can run research questions through three interfaces:
+1. `php research.php "question"` — one-shot CLI with auto-saved session transcript
+2. `php repl.php` — interactive REPL with progress display, session replay, history
+3. `php -S localhost:8080 -t public/` — web UI with SSE real-time streaming
+
+All interfaces run the full research pipeline: multi-agent parallel research (pcntl_fork), LLM quality scoring, n-gram diversity analysis, anonymized peer critique, and judge-selected winner with reasoning trace. Each session persists as a structured markdown transcript in `sessions/` with concurrent-safe JSON-line progress logs.
 
 ## Architectural Decisions
 

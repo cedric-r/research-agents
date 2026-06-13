@@ -66,12 +66,12 @@ The user drives this project and has deep software engineering expertise.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Vanilla PHP (no framework) | Maximum control, minimal deps for agent orchestration | — Pending |
-| File-per-session storage | Simple, traceable, human-readable | — Pending |
-| Interactive REPL (CLI + Web) | Flexibility — dev in terminal, use in browser | — Pending |
-| Two-round debate (independent → critique) | Balances independent thought with collaborative refinement | — Pending |
-| Config + SOUL.md per agent | Clear separation of mechanics from personality | — Pending |
-| All three source types in v1 | Full capability from launch — model, web, papers | — Pending |
+| Vanilla PHP (no framework) | Maximum control, minimal deps for agent orchestration | ✅ Implemented — zero Composer deps for core, 18 source files |
+| File-per-session storage | Simple, traceable, human-readable | ✅ Implemented — full markdown transcripts with frontmatter |
+| Interactive REPL (CLI + Web) | Flexibility — dev in terminal, use in browser | ✅ Implemented — repl.php + public/index.php with SSE |
+| Two-round debate (independent → critique) | Balances independent thought with collaborative refinement | ✅ Implemented — Phase 4 critique protocol |
+| Config + SOUL.md per agent | Clear separation of mechanics from personality | ✅ Implemented — 4 agents configured |
+| All three source types in v1 | Full capability from launch — model, web, papers | ✅ Implemented — LLM, Brave web search, arXiv/Semantic Scholar |
 
 ## Evolution
 

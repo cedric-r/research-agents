@@ -44,32 +44,32 @@ Requirements for initial release (43 total). Each maps to roadmap phases.
 
 ### Persistence
 
-- [ ] **PERS-01**: Each research session creates a new session with UUID and timestamp
-- [ ] **PERS-02**: Full session transcript saved as markdown file
-- [ ] **PERS-03**: Transcript includes question, all agent answers, debate content, and final selection with reasoning
-- [ ] **PERS-04**: Session files stored under `sessions/` directory
+- [x] **PERS-01**: Each research session creates a new session with UUID and timestamp
+- [x] **PERS-02**: Full session transcript saved as markdown file
+- [x] **PERS-03**: Transcript includes question, all agent answers, debate content, and final selection with reasoning
+- [x] **PERS-04**: Session files stored under `sessions/` directory
 
 ### Logging
 
 - [x] **LOG-01**: System logs all activities with timestamps and correlation IDs
 - [x] **LOG-02**: Log output separates by channel (arbitrator, agent, system)
-- [ ] **LOG-03**: Per-session log files alongside session transcripts
+- [x] **LOG-03**: Per-session log files alongside session transcripts
 
 ### CLI REPL
 
-- [ ] **CLI-01**: Interactive REPL using PHP readline with command history
-- [ ] **CLI-02**: User types research question, system returns final answer with trace
-- [ ] **CLI-03**: Real-time progress display showing which phase is active
-- [ ] **CLI-04**: Commands for config check, session replay, help
-- [ ] **CLI-05**: ANSI-formatted output for readability
+- [x] **CLI-01**: Interactive REPL using PHP readline with command history
+- [x] **CLI-02**: User types research question, system returns final answer with trace
+- [x] **CLI-03**: Real-time progress display showing which phase is active
+- [x] **CLI-04**: Commands for config check, session replay, help
+- [x] **CLI-05**: ANSI-formatted output for readability
 
 ### Web REPL
 
-- [ ] **WEB-01**: PHP built-in web server serves the web REPL interface
-- [ ] **WEB-02**: Web form to submit research question
-- [ ] **WEB-03**: Server-sent events (SSE) stream research progress to browser
-- [ ] **WEB-04**: Background process pattern: POST returns session ID, SSE endpoint streams events
-- [ ] **WEB-05**: View past sessions from browser
+- [x] **WEB-01**: PHP built-in web server serves the web REPL interface
+- [x] **WEB-02**: Web form to submit research question
+- [x] **WEB-03**: Server-sent events (SSE) stream research progress to browser
+- [x] **WEB-04**: Background process pattern: POST returns session ID, SSE endpoint streams events
+- [x] **WEB-05**: View past sessions from browser
 
 ## v2 Requirements
 
