@@ -65,7 +65,7 @@ Plans:
   4. The 4-layer timeout architecture (PHP max execution, HTTP socket, stream-idle watchdog, cooperative agent-step) prevents any single hung operation from blocking the entire session
   5. User can run a multi-agent research session and see all agents' independent answers collected and returned
 
-**Plans**: 2 plans
+**Plans**: 3 plans
 Plans:
 
 - [x] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
@@ -85,7 +85,7 @@ Plans:
   3. Arbitrator selects best final answer after Round 2 with written reasoning
   4. Echo chamber prevention: diversity-weighted selection penalizes agents that agree without adding value
 
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 
@@ -107,12 +107,13 @@ Plans:
   4. Each research session is saved as a markdown file in `sessions/` with UUID, timestamp, and full transcript (question, answers, debate content, and final selection with reasoning)
   5. User can view past sessions from both CLI (replay command) and web (session list page)
 
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 
-- [ ] `05-01-PLAN.md` -- Session Storage & CLI REPL (Wave 1)
-- [ ] `05-02-PLAN.md` -- Web REPL & Transcript Viewing (Wave 2)
+- [ ] `05-01-PLAN.md` -- Session Infrastructure: Manager, ProgressLogger, progress events, session save (Wave 1)
+- [ ] `05-02-PLAN.md` -- CLI REPL: readline loop, command dispatch, ANSI Formatter, progress display, session replay (Wave 2)
+- [ ] `05-03-PLAN.md` -- Web REPL: front controller, SSE streaming, exec() background process, past sessions list, CSS styling (Wave 3)
 
 **UI hint**: yes
 
@@ -127,4 +128,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Agent Runtime & Tool Integration | 4/4 | Complete   | 2026-06-13 |
 | 3. Orchestration Pipeline | 2/2 | Complete   | 2026-06-13 |
 | 4. Debate System & Echo Chamber Prevention | 2/2 | Complete    | 2026-06-13 |
-| 5. Storage & Presentation | TBD | Not started | - |
+| 5. Storage & Presentation | 0/3 | Planned | - |
