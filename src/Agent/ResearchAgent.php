@@ -278,6 +278,32 @@ class ResearchAgent
             $endTime = (int) (microtime(true) * 1000);
             $responseTimeMs = $endTime - $startTime;
 
+            // Validate that the response is parsable JSON with expected structure
+            // (early detection of malformed critiques, per T-04-02)
+            $critiquesRaw = $answer;
+            $cleaned = preg_replace('/^```(?:json)?\s*\n?/i', '', $critiquesRaw);
+            $cleaned = preg_replace('/\n?```\s*$/', '', $cleaned);
+            $parsedTest = json_decode(trim($cleaned), true, 16, JSON_THROW_ON_ERROR);
+            if (!is_array($parsedTest) || empty($parsedTest)) {
+                throw new \RuntimeException('Critique LLM returned non-JSON or empty response');
+            }
+            // Validate each critique entry has required fields
+            foreach ($parsedTest as $key => $entry) {
+                if (!is_array($entry)) {
+                    throw new \RuntimeException("Critique entry '{$key}' is not an object");
+                }
+                if (!isset($entry['score'])) {
+                    throw new \RuntimeException("Critique entry '{$key}' missing 'score' field");
+                }
+                $score = $entry['score'];
+                if (!is_int($score) && !is_float($score)) {
+                    throw new \RuntimeException("Critique entry '{$key}' score is not numeric");
+                }
+                if ($score < 0 || $score > 10) {
+                    throw new \RuntimeException("Critique entry '{$key}' score out of range (0-10): {$score}");
+                }
+            }
+
             $responseInfo = $this->llm->getLastResponseInfo();
 
             if ($this->logger) {

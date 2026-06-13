@@ -264,6 +264,18 @@ class Arbitrator
         $this->logger->info('Arbitrator: starting Round 2 peer critique');
         $critiqueResults = $this->executeRound2Critique($question, $results, $qualityScores);
 
+        // If Round 2 produced no critiques, fall back to quality-only selection with neutral scores
+        if (empty($critiqueResults)) {
+            $this->logger->warn('Arbitrator: Round 2 produced no critiques, using quality-only selection');
+            $defaultCritiques = [];
+            foreach ($results as $agentName => $_) {
+                $defaultCritiques[$agentName] = [
+                    'critiques' => json_encode([['score' => 5, 'strengths' => [], 'weaknesses' => ['No critique available']]]),
+                ];
+            }
+            $critiqueResults = $defaultCritiques;
+        }
+
         // Step 4: Select best final answer (ORCH-08, D-04)
         $this->logger->info('Arbitrator: selecting final answer');
         $this->selectFinalAnswer($question, $results, $qualityScores, $critiqueResults, $diversityData);
@@ -766,6 +778,13 @@ class Arbitrator
             throw new \RuntimeException('Cannot read scoring rubric prompt: ' . $promptPath);
         }
 
+        // Safety check: warn if template missing expected placeholders
+        if (strpos($promptTemplate, '{question}') === false && strpos($promptTemplate, '{answer}') === false) {
+            $this->logger->warn('Scoring prompt template missing expected placeholders', [
+                'path' => $promptPath,
+            ]);
+        }
+
         $scores = [];
         $temperature = (float) ($this->config['scoring']['temperature'] ?? 0.0);
 
@@ -828,6 +847,13 @@ class Arbitrator
         // Strip any markdown code fence if LLM wraps JSON in ```json ... ```
         $response = preg_replace('/^```(?:json)?\s*\n?/i', '', $response);
         $response = preg_replace('/\n?```\s*$/', '', $response);
+
+        // Safety extract: find first '{' and last '}' to handle extra text wrapping
+        $firstBrace = strpos($response, '{');
+        $lastBrace = strrpos($response, '}');
+        if ($firstBrace !== false && $lastBrace !== false && $lastBrace > $firstBrace) {
+            $response = substr($response, $firstBrace, $lastBrace - $firstBrace + 1);
+        }
 
         try {
             $data = json_decode(trim($response), true, 16, JSON_THROW_ON_ERROR);
@@ -899,6 +925,13 @@ class Arbitrator
             }
         }
 
+        $skipped = count($r1Results) - count($answerTexts);
+        if ($skipped > 0) {
+            $this->logger->info('Diversity scoring: skipped agents with empty answers', [
+                'count' => $skipped,
+            ]);
+        }
+
         if (count($answerTexts) < 2) {
             $result = [];
             foreach ($r1Results as $agentName => $_) {
@@ -912,12 +945,19 @@ class Arbitrator
 
         $similarityScores = DiversityAnalyzer::computeSimilarityScores($answerTexts, $nGramSize);
 
+        $threshold = (float) ($diversityConfig['threshold'] ?? 0.70);
         $result = [];
         foreach ($r1Results as $agentName => $_) {
             $avgSimilarity = $similarityScores[$agentName] ?? 0.0;
+            // Apply similarity threshold: only penalize if similarity exceeds threshold (Pitfall 4 mitigation)
+            if ($avgSimilarity < $threshold) {
+                $diversityBonus = 0.0; // No penalty for acceptable similarity
+            } else {
+                $diversityBonus = DiversityAnalyzer::diversityBonus($avgSimilarity, $factor);
+            }
             $result[$agentName] = [
                 'avg_similarity'  => $avgSimilarity,
-                'diversity_bonus' => DiversityAnalyzer::diversityBonus($avgSimilarity, $factor),
+                'diversity_bonus' => $diversityBonus,
             ];
         }
 
@@ -1082,6 +1122,15 @@ class Arbitrator
      */
     private function computeAverageCritiqueScores(array $critiqueResults): array
     {
+        // Neutral default when no critiques available (e.g., Round 2 produced no results)
+        if (empty($critiqueResults)) {
+            $result = [];
+            foreach ($this->agentManager->getAgentConfigs() as $agentName => $_) {
+                $result[$agentName] = 0.5;
+            }
+            return $result;
+        }
+
         $allScores = [];
 
         foreach ($critiqueResults as $criticAgent => $critiqueResult) {
@@ -1255,7 +1304,12 @@ class Arbitrator
     {
         $agentConfigs = $this->agentManager->getAgentConfigs();
         $maxConcurrent = (int) ($this->config['max_concurrent_agents'] ?? 5);
-        $critiqueTimeout = (int) ($this->config['critique']['timeout_seconds'] ?? 120);
+        $critiqueTimeout = (int) ($this->config['critique']['timeout_seconds']
+                            ?? $this->config['agent_timeout']
+                            ?? 120);
+        $this->logger->info('Arbitrator: Round 2 timeout configured', [
+            'critique_timeout_seconds' => $critiqueTimeout,
+        ]);
 
         $critiqueResults = [];
 
