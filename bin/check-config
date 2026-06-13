@@ -1,0 +1,53 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../src/bootstrap.php';
+
+use App\Config\Loader;
+
+$projectRoot = dirname(__DIR__);
+$loader = new Loader();
+
+$configs = [
+    'Agent config (researcher)' => $projectRoot . '/config/agents/researcher/config.json',
+    'Agent preferences'         => $projectRoot . '/config/agents/researcher/preferences.json',
+    'Arbitrator config'         => $projectRoot . '/config/arbitrator/config.json',
+];
+
+$successCount = 0;
+$failCount    = 0;
+
+foreach ($configs as $name => $path) {
+    try {
+        if (!file_exists($path)) {
+            throw new \RuntimeException('File not found');
+        }
+
+        if (str_ends_with($path, 'config.json')) {
+            // Researcher config requires provider, model, api_key
+            // Arbitrator config has no required fields (Phase 3 placeholder)
+            if (str_contains($path, 'agents/researcher')) {
+                $loader->load($path, required: ['provider', 'model', 'api_key'], types: ['provider' => 'string', 'model' => 'string', 'api_key' => 'string']);
+            } else {
+                // preferences.json or arbitrator config — just validate JSON
+                $loader->load($path, required: [], types: []);
+            }
+        } else {
+            $loader->load($path, required: [], types: []);
+        }
+
+        echo "[OK]   {$name}" . PHP_EOL;
+        $successCount++;
+    } catch (\Throwable $e) {
+        echo "[FAIL] {$name}: " . $e->getMessage() . PHP_EOL;
+        $failCount++;
+    }
+}
+
+$total = $successCount + $failCount;
+echo PHP_EOL;
+echo "Result: {$successCount}/{$total} configs passed" . PHP_EOL;
+
+exit($failCount > 0 ? 1 : 0);
