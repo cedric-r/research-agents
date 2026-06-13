@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-last_updated: "2026-06-13T15:13:09.726Z"
+last_updated: "2026-06-13T15:28:37.006Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 40
 ---
 
@@ -49,3 +49,20 @@ Average
 |------|----------|-----------|-----------------|
 | No PHPUnit test infrastructure yet | Medium | Phase 1 | Plan 02-01 adds composer.json + phpunit.xml.dist + tests/bootstrap.php |
 | composer.json (dev-only for PHPUnit) adds build step | Low | Phase 2 | No runtime deps. Only used for phpunit CLI. Autoloader remains custom. |
+
+## Performance Metrics
+
+| Phase | Plan | Duration | Notes |
+|-------|------|----------|-------|
+| Phase 03-orchestration-pipeline P01 | 18min | 3 tasks | 9 files |
+
+## Decisions
+
+- [Phase 03-orchestration-pipeline]: D-01: New src/Arbitrator/ namespace for Arbitrator class — Clean separation from AgentManager
+- [Phase 03-orchestration-pipeline]: D-02: Arbitrator uses AgentManager only for getAgentConfigs() — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-03: research.php creates Arbitrator, calls $arbitrator->research() — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-04: Return same result shape as AgentManager::research() — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-05: pcntl_fork for parallelism — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-06: Max concurrent agents (default 5), queue overflow — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-07: IPC via temp files with PID collision avoidance — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-08: pcntl_waitpid loop for child tracking — Per 03-CONTEXT.md locked decisions

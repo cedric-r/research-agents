@@ -31,10 +31,10 @@ Requirements for initial release (43 total). Each maps to roadmap phases.
 
 ### Orchestration
 
-- [ ] **ORCH-01**: Arbitrator discovers all configured agents via AgentManager
-- [ ] **ORCH-02**: Arbitrator distributes research question to all agents for Round 1
+- [x] **ORCH-01**: Arbitrator discovers all configured agents via AgentManager
+- [x] **ORCH-02**: Arbitrator distributes research question to all agents for Round 1
 - [ ] **ORCH-03**: Arbitrator enforces per-step timeout, instructs agents to stop and provide best partial answer
-- [ ] **ORCH-04**: Arbitrator collects Round 1 independent answers from all agents
+- [x] **ORCH-04**: Arbitrator collects Round 1 independent answers from all agents
 - [ ] **ORCH-05**: Arbitrator evaluates Round 1 answers using defined quality criteria
 - [ ] **ORCH-06**: Arbitrator shares all Round 1 answers with agents for Round 2 peer critique
 - [ ] **ORCH-07**: Agents read peer answers and produce structured critique in Round 2
@@ -122,10 +122,10 @@ Explicitly excluded. Documented to prevent scope creep.
 | TOOL-06 | Phase 2 | Pending |
 | TOOL-07 | Phase 2 | Pending |
 | TOOL-08 | Phase 2 | Pending |
-| ORCH-01 | Phase 3 | Pending |
-| ORCH-02 | Phase 3 | Pending |
+| ORCH-01 | Phase 3 | Complete |
+| ORCH-02 | Phase 3 | Complete |
 | ORCH-03 | Phase 3 | Pending |
-| ORCH-04 | Phase 3 | Pending |
+| ORCH-04 | Phase 3 | Complete |
 | ORCH-05 | Phase 4 | Pending |
 | ORCH-06 | Phase 4 | Pending |
 | ORCH-07 | Phase 4 | Pending |
@@ -151,11 +151,13 @@ Explicitly excluded. Documented to prevent scope creep.
 | WEB-05 | Phase 5 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 43 total
 - Mapped to phases: 43
 - Unmapped: 0 ✓
 
 **Phase breakdown:**
+
 - Phase 1: 10 requirements (CONF-01..07, TOOL-01, LOG-01..02)
 - Phase 2: 8 requirements (CONF-08, TOOL-02..08)
 - Phase 3: 5 requirements (ORCH-01..04, ORCH-10)
