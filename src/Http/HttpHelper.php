@@ -169,6 +169,8 @@ class HttpHelper
             CURLOPT_TIMEOUT        => $this->timeout,
             CURLOPT_CONNECTTIMEOUT  => $this->connectTimeout,
             CURLOPT_USERAGENT      => self::USER_AGENT,
+            // Fork safety: disable libcurl's SIGALRM timeout mechanism (CURLOPT_TIMEOUT uses poll()/select() instead)
+            CURLOPT_NOSIGNAL       => true,
             CURLOPT_HTTPHEADER     => $headers ?: [],
         ];
 

@@ -7,6 +7,7 @@ namespace App\Tests\Http;
 use App\Http\HttpHelper;
 use App\Http\HttpException;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 /**
  * @covers \App\Http\HttpHelper
@@ -126,5 +127,18 @@ class HttpHelperTest extends TestCase
         $exception = new HttpException('test error');
         $this->assertInstanceOf(\RuntimeException::class, $exception);
         $this->assertEquals('test error', $exception->getMessage());
+    }
+
+    /**
+     * @covers \App\Http\HttpHelper::buildCurlOptions
+     */
+    public function testForkSafeCurlOptions(): void
+    {
+        $http = new HttpHelper();
+        $method = new ReflectionMethod(HttpHelper::class, 'buildCurlOptions');
+        $options = $method->invoke($http, 'GET', null, []);
+
+        $this->assertArrayHasKey(CURLOPT_NOSIGNAL, $options);
+        $this->assertTrue($options[CURLOPT_NOSIGNAL]);
     }
 }
