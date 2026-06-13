@@ -84,4 +84,30 @@ class ResearchAgentTest extends TestCase
             $this->assertTrue(true);
         }
     }
+
+    public function testCritiqueMethodExists(): void
+    {
+        $loader = new \App\Config\Loader();
+        $agent = new ResearchAgent($this->tempAgentDir, $loader);
+
+        $this->assertTrue(method_exists($agent, 'critique'));
+    }
+
+    public function testCritiqueThrowsOnDeadlineExceeded(): void
+    {
+        $loader = new \App\Config\Loader();
+        $agent = new ResearchAgent($this->tempAgentDir, $loader);
+
+        $peerAnswers = [
+            ['answer' => 'Peer answer one', 'scores' => ['composite' => 8.0], 'agent' => 'peer_a'],
+            ['answer' => 'Peer answer two', 'scores' => ['composite' => 7.0], 'agent' => 'peer_b'],
+        ];
+        $critiquePrompt = 'Critique template: Evaluate the above answers.';
+
+        $deadline = microtime(true) - 10; // 10 seconds past deadline
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('deadline reached before critique LLM call');
+        $agent->critique('test question', $peerAnswers, $critiquePrompt, $deadline);
+    }
 }

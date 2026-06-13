@@ -222,6 +222,92 @@ class ResearchAgent
     }
 
     /**
+     * Produce a structured peer critique of other agents' answers (Round 2).
+     *
+     * Builds a system prompt from SOUL.md + critique template, anonymizes
+     * peer answers (labels them "Peer 1", "Peer 2" instead of agent names),
+     * calls the LLM, and returns a structured JSON critique.
+     *
+     * @param  string      $question       Original research question
+     * @param  array       $peerAnswers    Peer answers to critique: [[
+     *                                     'answer' => string, 'scores' => array, 'agent' => string, ...
+     *                                     ], ...]
+     *                                     The 'agent' key is used internally for exclusion check only.
+     *                                     Other keys (e.g., 'scores') are passed through for display.
+     * @param  string      $critiquePrompt Complete system prompt text with {peer_answers} already resolved
+     * @param  float|null  $deadline       Optional absolute Unix timestamp deadline for cooperative timeout
+     * @return array{critiques: string, model: string, response_time_ms: int, usage: array, correlation_id: string}
+     *         The 'critiques' key contains the raw JSON string returned by the LLM for the Arbitrator to parse.
+     * @throws \RuntimeException On deadline exceeded
+     * @throws LlmException      On LLM API errors
+     */
+    public function critique(string $question, array $peerAnswers, string $critiquePrompt, ?float $deadline = null): array
+    {
+        // Layer 4 deadline check before LLM call (same pattern as research())
+        if ($deadline !== null && microtime(true) + 5 > $deadline) {
+            throw new \RuntimeException('ResearchAgent: deadline reached before critique LLM call');
+        }
+
+        if ($this->logger) {
+            $this->logger->info('Agent critique started', [
+                'peer_count' => count($peerAnswers),
+                'model'      => $this->config['model'],
+            ]);
+        }
+
+        // Build system content from SOUL.md + the critique prompt (which already contains
+        // anonymized peer answer blocks and the critique template instructions)
+        $systemContent = $this->soul . "\n\n" . $critiquePrompt;
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemContent],
+            // Do NOT pass the original answer to the critique prompt -- the agent
+            // should not see its own answer or be able to self-identify.
+            // The critiquePrompt already contains anonymized peer answers.
+            ['role' => 'user', 'content' => 'Please critique the above peer answers according to the template.'],
+        ];
+
+        // Layer 4 deadline check: before LLM call (D-16 pattern)
+        if ($deadline !== null && microtime(true) + 5 > $deadline) {
+            throw new \RuntimeException('ResearchAgent: deadline reached before critique LLM call');
+        }
+
+        try {
+            $startTime = (int) (microtime(true) * 1000);
+            $answer = $this->llm->chat($messages);
+            $endTime = (int) (microtime(true) * 1000);
+            $responseTimeMs = $endTime - $startTime;
+
+            $responseInfo = $this->llm->getLastResponseInfo();
+
+            if ($this->logger) {
+                $this->logger->info('Agent critique completed', [
+                    'model'             => $responseInfo['model'],
+                    'response_time_ms'  => $responseTimeMs,
+                    'prompt_tokens'     => $responseInfo['usage']['prompt_tokens'],
+                    'completion_tokens' => $responseInfo['usage']['completion_tokens'],
+                ]);
+            }
+
+            return [
+                'critiques'        => $answer,     // Raw JSON string -- Arbitrator parses and validates
+                'model'            => $responseInfo['model'],
+                'response_time_ms' => $responseTimeMs,
+                'usage'            => $responseInfo['usage'],
+                'correlation_id'   => $this->correlationId,
+            ];
+        } catch (LlmException $e) {
+            if ($this->logger) {
+                $this->logger->error('Agent critique failed', [
+                    'error' => $e->getMessage(),
+                    'model' => $this->config['model'],
+                ]);
+            }
+            throw $e;
+        }
+    }
+
+    /**
      * Resolve the provider API base URL from config.
      *
      * Priority:
