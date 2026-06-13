@@ -6,7 +6,7 @@ Build a multi-agent research and debate system in Vanilla PHP, starting with a s
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Single-Agent Baseline** - Config loading, logging, and one agent answering via LLM to validate core value before multi-agent complexity
+- [x] **Phase 1: Foundation & Single-Agent Baseline** - Config loading, logging, and one agent answering via LLM to validate core value before multi-agent complexity
 - [ ] **Phase 2: Agent Runtime & Tool Integration** - LlmClient, web search, paper search (arXiv + Semantic Scholar), AgentManager with timeout architecture
 - [ ] **Phase 3: Orchestration Pipeline** - Arbitrator distributes questions, enforces per-step timeouts, collects Round 1 answers with structured handoffs
 - [ ] **Phase 4: Debate System & Echo Chamber Prevention** - Refined 2-round debate, quality evaluation, peer critique, reasoned answer selection with diversity mechanisms
@@ -32,9 +32,9 @@ Build a multi-agent research and debate system in Vanilla PHP, starting with a s
 
 Plans:
 
-- [ ] `01-01-PLAN.md` — Walking Skeleton Foundation: project structure, SKELETON.md, agent config files (CONF-01..05)
-- [ ] `01-02-PLAN.md` — Config Loader and Logger: autoloader, config loading with aggregate validation, channel-prefixed logger (CONF-06, CONF-07, LOG-01, LOG-02)
-- [ ] `01-03-PLAN.md` — LLM Integration and CLI: LlmClient via curl, ResearchAgent, research.php CLI, bin/check-config (TOOL-01)
+- [x] `01-01-PLAN.md` — Walking Skeleton Foundation: project structure, SKELETON.md, agent config files (CONF-01..05)
+- [x] `01-02-PLAN.md` — Config Loader and Logger: autoloader, config loading with aggregate validation, channel-prefixed logger (CONF-06, CONF-07, LOG-01, LOG-02)
+- [x] `01-03-PLAN.md` — LLM Integration and CLI: LlmClient via curl, ResearchAgent, research.php CLI, bin/check-config (TOOL-01)
 
 ### Phase 2: Agent Runtime & Tool Integration
 
@@ -108,7 +108,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Single-Agent Baseline | 2/3 | In Progress|  |
+| 1. Foundation & Single-Agent Baseline | 3/3 | Complete | 2026-06-13 |
 | 2. Agent Runtime & Tool Integration | TBD | Not started | - |
 | 3. Orchestration Pipeline | TBD | Not started | - |
 | 4. Debate System & Echo Chamber Prevention | TBD | Not started | - |

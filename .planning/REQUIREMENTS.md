@@ -9,18 +9,18 @@ Requirements for initial release (43 total). Each maps to roadmap phases.
 
 ### Agent Configuration
 
-- [ ] **CONF-01**: Each agent has own directory under `config/agents/{name}/`
-- [ ] **CONF-02**: Arbitrator has own config directory with its configuration
-- [ ] **CONF-03**: `config.json` contains model provider, model name, API key per agent
-- [ ] **CONF-04**: `SOUL.md` defines agent personality, identity, values, and behavior instructions
-- [ ] **CONF-05**: `preferences.json` defines tool access and agent-specific settings
-- [ ] **CONF-06**: Config loader supports JSON and PHP array config files — detects format by file extension
-- [ ] **CONF-07**: Config validation reports missing fields and invalid values at startup
+- [x] **CONF-01**: Each agent has own directory under `config/agents/{name}/`
+- [x] **CONF-02**: Arbitrator has own config directory with its configuration
+- [x] **CONF-03**: `config.json` contains model provider, model name, API key per agent
+- [x] **CONF-04**: `SOUL.md` defines agent personality, identity, values, and behavior instructions
+- [x] **CONF-05**: `preferences.json` defines tool access and agent-specific settings
+- [x] **CONF-06**: Config loader supports JSON and PHP array config files — detects format by file extension
+- [x] **CONF-07**: Config validation reports missing fields and invalid values at startup
 - [ ] **CONF-08**: AgentManager discovers agents by scanning config directories at runtime
 
 ### Research Tools
 
-- [ ] **TOOL-01**: Agent can research question using its LLM model knowledge via API call
+- [x] **TOOL-01**: Agent can research question using its LLM model knowledge via API call
 - [ ] **TOOL-02**: Agent can perform web searches via configurable search API provider
 - [ ] **TOOL-03**: Agent can search arXiv API for scientific papers
 - [ ] **TOOL-04**: Agent can search Semantic Scholar API for scientific papers and citations
@@ -51,8 +51,8 @@ Requirements for initial release (43 total). Each maps to roadmap phases.
 
 ### Logging
 
-- [ ] **LOG-01**: System logs all activities with timestamps and correlation IDs
-- [ ] **LOG-02**: Log output separates by channel (arbitrator, agent, system)
+- [x] **LOG-01**: System logs all activities with timestamps and correlation IDs
+- [x] **LOG-02**: Log output separates by channel (arbitrator, agent, system)
 - [ ] **LOG-03**: Per-session log files alongside session transcripts
 
 ### CLI REPL
@@ -106,15 +106,15 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONF-01 | Phase 1 | Pending |
-| CONF-02 | Phase 1 | Pending |
-| CONF-03 | Phase 1 | Pending |
-| CONF-04 | Phase 1 | Pending |
-| CONF-05 | Phase 1 | Pending |
-| CONF-06 | Phase 1 | Pending |
-| CONF-07 | Phase 1 | Pending |
+| CONF-01 | Phase 1 | Completed |
+| CONF-02 | Phase 1 | Completed |
+| CONF-03 | Phase 1 | Completed |
+| CONF-04 | Phase 1 | Completed |
+| CONF-05 | Phase 1 | Completed |
+| CONF-06 | Phase 1 | Completed |
+| CONF-07 | Phase 1 | Completed |
 | CONF-08 | Phase 2 | Pending |
-| TOOL-01 | Phase 1 | Pending |
+| TOOL-01 | Phase 1 | Completed |
 | TOOL-02 | Phase 2 | Pending |
 | TOOL-03 | Phase 2 | Pending |
 | TOOL-04 | Phase 2 | Pending |
@@ -136,8 +136,8 @@ Explicitly excluded. Documented to prevent scope creep.
 | PERS-02 | Phase 5 | Pending |
 | PERS-03 | Phase 5 | Pending |
 | PERS-04 | Phase 5 | Pending |
-| LOG-01 | Phase 1 | Pending |
-| LOG-02 | Phase 1 | Pending |
+| LOG-01 | Phase 1 | Completed |
+| LOG-02 | Phase 1 | Completed |
 | LOG-03 | Phase 5 | Pending |
 | CLI-01 | Phase 5 | Pending |
 | CLI-02 | Phase 5 | Pending |
