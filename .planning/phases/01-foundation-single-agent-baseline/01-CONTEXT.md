@@ -14,8 +14,8 @@ Config loading, logging infrastructure, and a single agent that can answer a res
 ## Implementation Decisions
 
 ### Config File Format
-- **D-01:** Config files use JSON format (config.json per agent/arbitrator). JSON is universal, human-readable, and requires no parser library.
-- **D-02:** Config loader parses JSON via json_decode with strict validation.
+- **D-01:** Config files support JSON and PHP array formats. JSON for config.json, preferences.json. PHP arrays also accepted. Loader detects format by file extension.
+- **D-02:** Config loader parses JSON via json_decode with strict validation. PHP arrays loaded via include.
 - **D-03:** Each agent gets its own directory under `config/agents/{name}/` containing config.json, SOUL.md, and preferences.json.
 
 ### LLM API Client
@@ -35,6 +35,9 @@ Config loading, logging infrastructure, and a single agent that can answer a res
 - **D-11:** Human-readable formatted text log. Console output shows timestamp, channel, level, and message in readable format.
 - **D-12:** Log channels separated (agent, system). Phase 1 uses a single log file with channel prefix.
 - **D-13:** Per-session log files deferred to Phase 5 — Phase 1 uses a single application log.
+
+- **D-14:** API keys stored directly in config.json. Config files should be gitignored for local use.
+- **D-15:** LLM response output formatted with metadata — model name, response time, token count alongside the answer.
 
 ### Claude's Discretion
 - Directory structure beyond config layout — planner chooses src/ organization

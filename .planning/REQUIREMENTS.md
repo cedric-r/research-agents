@@ -14,7 +14,7 @@ Requirements for initial release (43 total). Each maps to roadmap phases.
 - [ ] **CONF-03**: `config.json` contains model provider, model name, API key per agent
 - [ ] **CONF-04**: `SOUL.md` defines agent personality, identity, values, and behavior instructions
 - [ ] **CONF-05**: `preferences.json` defines tool access and agent-specific settings
-- [ ] **CONF-06**: Config loader supports PHP array config files for zero parsing overhead
+- [ ] **CONF-06**: Config loader supports JSON and PHP array config files — detects format by file extension
 - [ ] **CONF-07**: Config validation reports missing fields and invalid values at startup
 - [ ] **CONF-08**: AgentManager discovers agents by scanning config directories at runtime
 
