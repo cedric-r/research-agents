@@ -65,7 +65,11 @@ Plans:
   4. The 4-layer timeout architecture (PHP max execution, HTTP socket, stream-idle watchdog, cooperative agent-step) prevents any single hung operation from blocking the entire session
   5. User can run a multi-agent research session and see all agents' independent answers collected and returned
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
+- [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
 
 ### Phase 4: Debate System & Echo Chamber Prevention
 
@@ -81,7 +85,11 @@ Plans:
   3. Arbitrator selects best final answer after Round 2 with written reasoning
   4. Echo chamber prevention: diversity-weighted selection penalizes agents that agree without adding value
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
+- [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
 
 ### Phase 5: Storage & Presentation
 
@@ -98,7 +106,11 @@ Plans:
   4. Each research session is saved as a markdown file in `sessions/` with UUID, timestamp, and full transcript (question, answers, debate content, and final selection with reasoning)
   5. User can view past sessions from both CLI (replay command) and web (session list page)
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] `03-01-PLAN.md` -- Core Arbitrator with Fork Execution (Wave 1)
+- [ ] `03-02-PLAN.md` -- Timeout Architecture & Layer 4 Deadline (Wave 2)
 **UI hint**: yes
 
 ## Progress
