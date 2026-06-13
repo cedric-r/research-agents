@@ -11,6 +11,7 @@ use App\Http\HttpHelper;
 use App\Log\Logger;
 use App\Arbitrator\DiversityAnalyzer;
 use App\LlmClient\LlmClient;
+use App\Session\ProgressLogger;
 
 /**
  * Multi-agent orchestrator with process-level parallelism.
@@ -51,6 +52,7 @@ class Arbitrator
     private ?LlmClient $judgeLlm = null;
     private ?array $debateResult = null;
     private string $projectRoot;
+    private ?string $progressLogFile = null;
 
     /**
      * @param AgentManager $agentManager Agent discovery service
@@ -249,6 +251,13 @@ class Arbitrator
             // Not enough agents for meaningful debate
             $this->logger->info('Arbitrator: skipping debate -- fewer than 2 agents responded');
             $this->debateResult = null;
+
+            // Emit batch_complete (Phase 5, D-11)
+            if ($this->progressLogFile !== null) {
+                $pl = new ProgressLogger($this->progressLogFile);
+                $pl->logEvent('batch_complete', '', ['agent_count' => count($results)]);
+            }
+
             return $results;
         }
 
@@ -279,6 +288,12 @@ class Arbitrator
         // Step 4: Select best final answer (ORCH-08, D-04)
         $this->logger->info('Arbitrator: selecting final answer');
         $this->selectFinalAnswer($question, $results, $qualityScores, $critiqueResults, $diversityData);
+
+        // Emit batch_complete after debate completes (Phase 5, D-11)
+        if ($this->progressLogFile !== null) {
+            $pl = new ProgressLogger($this->progressLogFile);
+            $pl->logEvent('batch_complete', '', ['agent_count' => count($results)]);
+        }
 
         return $results;
     }
@@ -505,6 +520,12 @@ class Arbitrator
                 );
                 $agent->setToolRegistry($toolRegistry);
 
+                if ($this->progressLogFile !== null) {
+                    $pl = new ProgressLogger($this->progressLogFile);
+                    $agent->setProgressLogger($pl);
+                    $agent->setAgentName($agentName);
+                }
+
                 $result = $agent->research($question);
                 $results[$agentName] = $result;
             } catch (\Throwable $e) {
@@ -564,6 +585,13 @@ class Arbitrator
                 $agentLogger
             );
             $agent->setToolRegistry($toolRegistry);
+
+            // Inject progress logger if configured (Phase 5, D-09)
+            if ($this->progressLogFile !== null) {
+                $progressLogger = new ProgressLogger($this->progressLogFile);
+                $agent->setProgressLogger($progressLogger);
+                $agent->setAgentName($agentName);
+            }
 
             // Check if SIGTERM was received before research started
             if ($timedOut) {
@@ -750,6 +778,22 @@ class Arbitrator
     private function logFilePath(): string
     {
         return dirname(__DIR__, 2) . '/logs/research.log';
+    }
+
+    /**
+     * Set the path to the progress log file for real-time event streaming (Phase 5, D-09).
+     */
+    public function setProgressLogFile(?string $path): void
+    {
+        $this->progressLogFile = $path;
+    }
+
+    /**
+     * Get the correlation ID for this research run.
+     */
+    public function getCorrelationId(): string
+    {
+        return $this->correlationId;
     }
 
     // ---------------------------------------------------------------
@@ -1494,6 +1538,13 @@ class Arbitrator
             );
             $agent->setToolRegistry($toolRegistry);
 
+            // Inject progress logger (Phase 5, D-09)
+            if ($this->progressLogFile !== null) {
+                $pl = new ProgressLogger($this->progressLogFile);
+                $agent->setProgressLogger($pl);
+                $agent->setAgentName($agentName);
+            }
+
             // Deadline: same as parent's per-child deadline
             $critiqueTimeout = (int) ($this->config['critique']['timeout_seconds'] ?? 120);
             $deadline = microtime(true) + $critiqueTimeout;
@@ -1565,6 +1616,12 @@ class Arbitrator
                     $agentLogger
                 );
                 $agent->setToolRegistry($toolRegistry);
+
+                if ($this->progressLogFile !== null) {
+                    $pl = new ProgressLogger($this->progressLogFile);
+                    $agent->setProgressLogger($pl);
+                    $agent->setAgentName($agentName);
+                }
 
                 $result = $agent->critique($question, [], $critiquePrompts[$agentName], $deadline);
                 $results[$agentName] = $result;

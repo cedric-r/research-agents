@@ -8,6 +8,7 @@ use App\Config\Loader;
 use App\LlmClient\LlmClient;
 use App\LlmClient\LlmException;
 use App\Log\Logger;
+use App\Session\ProgressLogger;
 use App\Tool\ToolRegistry;
 
 class ResearchAgent
@@ -19,6 +20,8 @@ class ResearchAgent
     private ?Logger $logger;
     private string $correlationId;
     private ?ToolRegistry $toolRegistry = null;
+    private ?ProgressLogger $progressLogger = null;
+    private string $agentName = '';
 
     /**
      * @param string           $agentDir     Path to the agent's config directory
@@ -77,6 +80,22 @@ class ResearchAgent
     public function setToolRegistry(ToolRegistry $registry): void
     {
         $this->toolRegistry = $registry;
+    }
+
+    /**
+     * Set progress logger for real-time event emission (Phase 5, D-11).
+     */
+    public function setProgressLogger(?ProgressLogger $logger): void
+    {
+        $this->progressLogger = $logger;
+    }
+
+    /**
+     * Set the agent's display name (used in progress events).
+     */
+    public function setAgentName(string $name): void
+    {
+        $this->agentName = $name;
     }
 
     /**
@@ -159,6 +178,12 @@ class ResearchAgent
             ]);
         }
 
+        // Emit started progress event (Phase 5, D-11)
+        $this->emitProgress('started', [
+            'question' => mb_substr($question, 0, 100),
+            'model'    => $this->config['model'],
+        ]);
+
         // Build system content: soul + optional tool context
         $systemContent = $this->soul;
 
@@ -174,6 +199,15 @@ class ResearchAgent
 
         if ($toolContext !== '') {
             $systemContent .= "\n\n" . $toolContext;
+
+            // Emit tool events based on what was configured (Phase 5, D-11)
+            $tools = $this->preferences['tools'] ?? [];
+            if (!empty($tools['web_search'])) {
+                $this->emitProgress('web_search', ['tool' => 'web_search']);
+            }
+            if (!empty($tools['paper_search'])) {
+                $this->emitProgress('paper_search', ['tool' => 'paper_search']);
+            }
         }
 
         $messages = [
@@ -185,6 +219,9 @@ class ResearchAgent
         if ($deadline !== null && microtime(true) + 5 > $deadline) {
             throw new \RuntimeException('ResearchAgent: deadline reached before LLM call');
         }
+
+        // Emit llm_call progress event (Phase 5, D-11)
+        $this->emitProgress('llm_call', ['model' => $this->config['model']]);
 
         try {
             $startTime = (int) (microtime(true) * 1000);
@@ -203,6 +240,12 @@ class ResearchAgent
                 ]);
             }
 
+            // Emit completed progress event (Phase 5, D-11)
+            $this->emitProgress('completed', [
+                'response_time_ms' => $responseTimeMs,
+                'model'            => $responseInfo['model'],
+            ]);
+
             return [
                 'answer'           => $answer,
                 'model'            => $responseInfo['model'],
@@ -211,6 +254,10 @@ class ResearchAgent
                 'correlation_id'   => $this->correlationId,
             ];
         } catch (LlmException $e) {
+            // Emit failed progress event (Phase 5, D-11)
+            $this->emitProgress('failed', [
+                'error' => mb_substr($e->getMessage(), 0, 200),
+            ]);
             if ($this->logger) {
                 $this->logger->error('Agent research failed', [
                     'error'   => $e->getMessage(),
@@ -330,6 +377,16 @@ class ResearchAgent
                 ]);
             }
             throw $e;
+        }
+    }
+
+    /**
+     * Emit a progress event if a ProgressLogger is configured (Phase 5, D-11).
+     */
+    private function emitProgress(string $event, array $data = []): void
+    {
+        if ($this->progressLogger !== null) {
+            $this->progressLogger->logEvent($event, $this->agentName, $data);
         }
     }
 

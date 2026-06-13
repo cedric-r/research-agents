@@ -1,0 +1,7 @@
+{
+    "session_dir": "sessions",
+    "max_sessions": 1000,
+    "slug_max_length": 60,
+    "transcript_permissions": "0600",
+    "directory_permissions": "0775"
+}

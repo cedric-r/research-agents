@@ -9,6 +9,7 @@ use App\Agent\AgentManager;
 use App\Arbitrator\Arbitrator;
 use App\Config\Loader;
 use App\Log\Logger;
+use App\Session\Manager as SessionManager;
 
 // Usage check per D-08
 if ($argc < 2) {
@@ -37,6 +38,8 @@ $logger->info('Research started', [
 ]);
 
 try {
+    $startTime = microtime(true);
+
     $configLoader = new Loader();
 
     $agentManager = new AgentManager(
@@ -51,6 +54,11 @@ try {
         $configLoader,
         $logger
     );
+
+    // Set progress log file path (Phase 5, D-09)
+    $slug = SessionManager::slugFromQuestion($question);
+    $progressLogPath = __DIR__ . '/sessions/' . date('Y-m-d') . '_' . $slug . '/session.log';
+    $arbitrator->setProgressLogFile($progressLogPath);
 
     $results = $arbitrator->research($question, $correlationId);
 
@@ -176,6 +184,22 @@ try {
         echo PHP_EOL;
         echo "== Research Complete ==" . PHP_EOL;
         printf("Agents: %d | Correlation ID: %s" . PHP_EOL, $agentCount, $correlationId);
+    }
+
+    // Save session transcript (Phase 5: PERS-01 through PERS-04)
+    $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+    try {
+        $sessionsDir = __DIR__ . '/sessions';
+        $sessionManager = new SessionManager($sessionsDir);
+        $sessionData = [
+            'results'    => $results,
+            'debate'     => $debateResult,
+            'duration_ms' => $durationMs,
+        ];
+        $slug = $sessionManager->createSession($question, $sessionData);
+        $logger->info('Session saved', ['slug' => $slug]);
+    } catch (\Throwable $e) {
+        $logger->error('Session save failed', ['error' => $e->getMessage()]);
     }
 
     $logger->info('Research completed successfully', [
