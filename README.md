@@ -1,5 +1,7 @@
 # ResearchAgents
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 Multi-agent research and debate system. Distributes questions to AI agents with diverse models/personalities, runs a two-round debate (independent answers → peer critique → judge selection), and surfaces the best result with full traceability.
 
 **Zero framework. Vanilla PHP. CLI + web.**
@@ -139,3 +141,7 @@ php vendor/bin/phpunit
 | 03 | ✅ | Orchestration: pcntl_fork parallelism, timeout architecture |
 | 04 | ✅ | Debate: scoring, critique, diversity bonus, judge selection |
 | 05 | ✅ | Storage & Presentation: session persistence, CLI REPL, web REPL |
+
+## License
+
+GNU General Public License v3.0. See [LICENSE](LICENSE).
