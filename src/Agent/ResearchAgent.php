@@ -12,6 +12,7 @@ use App\Log\Logger;
 class ResearchAgent
 {
     private array $config;
+    private array $preferences;
     private string $soul;
     private LlmClient $llm;
     private ?Logger $logger;
@@ -38,7 +39,7 @@ class ResearchAgent
         );
 
         // Load preferences (optional — no required fields in Phase 1)
-        $configLoader->load(
+        $this->preferences = $configLoader->load(
             $agentDir . '/preferences.json',
             required: [],
             types: []
