@@ -141,12 +141,13 @@ class ResearchAgent
     /**
      * Run research on a question and return structured result with metadata.
      *
-     * @param  string $question Research question (capped at 2000 chars)
+     * @param  string      $question Research question (capped at 2000 chars)
+     * @param  float|null  $deadline Optional absolute Unix timestamp deadline for Layer 4 cooperative timeout (D-16)
      * @return array{answer: string, model: string, response_time_ms: int, usage: array, correlation_id: string}
-     * @throws \RuntimeException On SOUL.md issues
+     * @throws \RuntimeException On SOUL.md issues or deadline exceeded
      * @throws LlmException      On LLM API errors
      */
-    public function research(string $question): array
+    public function research(string $question, ?float $deadline = null): array
     {
         // T-01-09: Cap question at 2000 characters to prevent prompt injection surface
         $question = mb_substr($question, 0, 2000);
@@ -160,7 +161,17 @@ class ResearchAgent
 
         // Build system content: soul + optional tool context
         $systemContent = $this->soul;
-        $toolContext = $this->buildToolContext($question);
+
+        // Layer 4 deadline check: skip tool building if deadline is imminent (D-16)
+        if ($deadline !== null && microtime(true) + 5 > $deadline) {
+            $toolContext = '';
+            if ($this->logger) {
+                $this->logger->info('ResearchAgent: deadline imminent, skipping tool context');
+            }
+        } else {
+            $toolContext = $this->buildToolContext($question);
+        }
+
         if ($toolContext !== '') {
             $systemContent .= "\n\n" . $toolContext;
         }
@@ -169,6 +180,11 @@ class ResearchAgent
             ['role' => 'system', 'content' => $systemContent],
             ['role' => 'user',   'content' => $question],
         ];
+
+        // Layer 4 deadline check: before LLM call (D-16)
+        if ($deadline !== null && microtime(true) + 5 > $deadline) {
+            throw new \RuntimeException('ResearchAgent: deadline reached before LLM call');
+        }
 
         try {
             $startTime = (int) (microtime(true) * 1000);
