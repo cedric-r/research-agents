@@ -35,11 +35,11 @@ Requirements for initial release (43 total). Each maps to roadmap phases.
 - [x] **ORCH-02**: Arbitrator distributes research question to all agents for Round 1
 - [x] **ORCH-03**: Arbitrator enforces per-step timeout, instructs agents to stop and provide best partial answer
 - [x] **ORCH-04**: Arbitrator collects Round 1 independent answers from all agents
-- [ ] **ORCH-05**: Arbitrator evaluates Round 1 answers using defined quality criteria
-- [ ] **ORCH-06**: Arbitrator shares all Round 1 answers with agents for Round 2 peer critique
-- [ ] **ORCH-07**: Agents read peer answers and produce structured critique in Round 2
-- [ ] **ORCH-08**: Arbitrator selects best final answer after Round 2 with written reasoning
-- [ ] **ORCH-09**: Arbitrator presents final answer with full reasoning trace (why this answer won)
+- [x] **ORCH-05**: Arbitrator evaluates Round 1 answers using defined quality criteria
+- [x] **ORCH-06**: Arbitrator shares all Round 1 answers with agents for Round 2 peer critique
+- [x] **ORCH-07**: Agents read peer answers and produce structured critique in Round 2
+- [x] **ORCH-08**: Arbitrator selects best final answer after Round 2 with written reasoning
+- [x] **ORCH-09**: Arbitrator presents final answer with full reasoning trace (why this answer won)
 - [x] **ORCH-10**: 4-layer timeout architecture: PHP max execution, HTTP socket, stream-idle watchdog, cooperative agent-step deadline
 
 ### Persistence
@@ -126,11 +126,11 @@ Explicitly excluded. Documented to prevent scope creep.
 | ORCH-02 | Phase 3 | Complete |
 | ORCH-03 | Phase 3 | Completed |
 | ORCH-04 | Phase 3 | Complete |
-| ORCH-05 | Phase 4 | Pending |
-| ORCH-06 | Phase 4 | Pending |
-| ORCH-07 | Phase 4 | Pending |
-| ORCH-08 | Phase 4 | Pending |
-| ORCH-09 | Phase 4 | Pending |
+| ORCH-05 | Phase 4 | Complete |
+| ORCH-06 | Phase 4 | Complete |
+| ORCH-07 | Phase 4 | Complete |
+| ORCH-08 | Phase 4 | Complete |
+| ORCH-09 | Phase 4 | Complete |
 | ORCH-10 | Phase 3 | Completed |
 | PERS-01 | Phase 5 | Pending |
 | PERS-02 | Phase 5 | Pending |
