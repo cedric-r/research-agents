@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-last_updated: "2026-06-13T15:28:37.006Z"
+last_updated: "2026-06-13T15:36:42.238Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 40
+  completed_plans: 9
+  percent: 60
 ---
 
 # Project State
@@ -55,6 +55,7 @@ Average
 | Phase | Plan | Duration | Notes |
 |-------|------|----------|-------|
 | Phase 03-orchestration-pipeline P01 | 18min | 3 tasks | 9 files |
+| Phase 03-orchestration-pipeline P02 | 18min | 2 tasks | 4 files |
 
 ## Decisions
 
@@ -66,3 +67,11 @@ Average
 - [Phase 03-orchestration-pipeline]: D-06: Max concurrent agents (default 5), queue overflow — Per 03-CONTEXT.md locked decisions
 - [Phase 03-orchestration-pipeline]: D-07: IPC via temp files with PID collision avoidance — Per 03-CONTEXT.md locked decisions
 - [Phase 03-orchestration-pipeline]: D-08: pcntl_waitpid loop for child tracking — Per 03-CONTEXT.md locked decisions
+- [Phase 03-orchestration-pipeline]: D-09: Per-step timeout configurable per-agent (default 60s) — Implemented in Plan 02
+- [Phase 03-orchestration-pipeline]: D-10: Flag-based SIGTERM handler in child — No file I/O in signal handler, deferred write in main context
+- [Phase 03-orchestration-pipeline]: D-11: Missing/empty temp file = "[Agent name] timed out -- no partial answer" — Implemented in Plan 02
+- [Phase 03-orchestration-pipeline]: D-12: Batch-level safety net pcntl_alarm + SIGALRM — Implemented in Plan 02
+- [Phase 03-orchestration-pipeline]: D-13: Layer 1 max_execution_time documented as inactive in CLI — Documented in Arbitrator docblock
+- [Phase 03-orchestration-pipeline]: D-14: Layer 2 HTTP socket timeout active from Phase 2 — No changes needed
+- [Phase 03-orchestration-pipeline]: D-15: Layer 3 stream-idle watchdog deferred to v2 — Documented in Arbitrator docblock
+- [Phase 03-orchestration-pipeline]: D-16: Layer 4 cooperative deadline check in ResearchAgent — Implemented in Plan 02
