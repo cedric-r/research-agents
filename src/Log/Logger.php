@@ -32,7 +32,7 @@ class Logger
 
         $timestamp = (new \DateTimeImmutable())->format('Y-m-d H:i:s.u');
 
-        $message = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $message);
+        $message = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x0A\x0D]/', '', $message);
 
         $line = sprintf(
             "[%s] [%-11s] [%-5s] [%s] %s%s\n",
