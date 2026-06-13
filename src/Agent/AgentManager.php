@@ -12,11 +12,11 @@ use App\Tool\ToolRegistry;
 use App\Tool\WebSearch;
 
 /**
- * Agent discovery and lifecycle management.
+ * Agent discovery only -- orchestration moved to Arbitrator.
  *
  * Scans agent directories under the configured base path for config.json
- * files to discover configured agents, creates fresh ResearchAgent instances
- * per research() call (D-02), and returns structured results from every agent.
+ * files to discover configured agents. Returns agent configs via getAgentConfigs()
+ * for the Arbitrator to manage execution.
  *
  * @package App\Agent
  */
@@ -129,96 +129,6 @@ class AgentManager
     }
 
     /**
-     * Run research through all configured agents.
-     *
-     * Discovers agents if not already cached, creates a fresh ResearchAgent
-     * per agent (D-02), configures tools based on each agent's config, and
-     * collects structured results keyed by agent name.
-     *
-     * @param  string $question      Research question (capped at 2000 chars per ResearchAgent)
-     * @param  string $correlationId Correlation ID tying all agent activity to a session
-     * @return array<string, array{answer: string, model: string, response_time_ms: int, usage: array, correlation_id: string, error?: string}>
-     * @throws \RuntimeException If no agents are configured
-     */
-    public function research(string $question, string $correlationId): array
-    {
-        $agents = $this->getAgentConfigs();
-
-        if ($agents === []) {
-            throw new \RuntimeException(
-                'No agents configured for research. Create agent configs under: ' . $this->agentsBaseDir
-            );
-        }
-
-        if ($this->logger) {
-            $this->logger->info('AgentManager: starting multi-agent research', [
-                'agent_count' => count($agents),
-                'agents'      => array_keys($agents),
-            ]);
-        }
-
-        // HttpHelper is stateless — shared across all agents
-        $http = new HttpHelper();
-        $results = [];
-
-        foreach ($agents as $agentName => $agentInfo) {
-            if ($this->logger) {
-                $this->logger->info('AgentManager: running agent', [
-                    'agent' => $agentName,
-                ]);
-            }
-
-            try {
-                // D-02: fresh ResearchAgent instance per research() call
-                $agentLogger = new Logger($this->logFile, $agentName, $correlationId);
-
-                $agent = new ResearchAgent(
-                    $agentInfo['dir'],
-                    $this->configLoader,
-                    $agentLogger
-                );
-
-                // Configure tools based on agent config
-                $toolRegistry = $this->configureTools($http, $agentInfo['config'], $agentLogger);
-                $agent->setToolRegistry($toolRegistry);
-
-                $result = $agent->research($question);
-                $results[$agentName] = $result;
-
-                if ($this->logger) {
-                    $this->logger->info('AgentManager: agent completed', [
-                        'agent'   => $agentName,
-                        'time_ms' => $result['response_time_ms'] ?? 0,
-                    ]);
-                }
-            } catch (\Throwable $e) {
-                $results[$agentName] = [
-                    'answer'           => 'Agent ' . $agentName . ' failed: ' . $e->getMessage(),
-                    'model'            => $agentInfo['config']['model'] ?? 'unknown',
-                    'response_time_ms'  => 0,
-                    'usage'            => [
-                        'prompt_tokens'     => 0,
-                        'completion_tokens' => 0,
-                        'total_tokens'      => 0,
-                    ],
-                    'correlation_id'   => $correlationId,
-                    'error'            => $e->getMessage(),
-                ];
-
-                if ($this->logger) {
-                    $this->logger->error('AgentManager: agent failed', [
-                        'agent'          => $agentName,
-                        'error'          => $e->getMessage(),
-                        'correlation_id' => $correlationId,
-                    ]);
-                }
-            }
-        }
-
-        return $results;
-    }
-
-    /**
      * Configure tools for an agent based on its config and preferences.
      *
      * Replicates the tool wiring from research.php: WebSearch (gated on
@@ -229,7 +139,7 @@ class AgentManager
      * @param  Logger     $logger Agent-specific logger
      * @return ToolRegistry       Configured tool registry
      */
-    private function configureTools(HttpHelper $http, array $config, Logger $logger): ToolRegistry
+    public function configureTools(HttpHelper $http, array $config, Logger $logger): ToolRegistry
     {
         $toolRegistry = new ToolRegistry($logger);
 
