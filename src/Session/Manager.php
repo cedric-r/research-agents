@@ -103,6 +103,28 @@ class Manager
         file_put_contents($path, $transcript, LOCK_EX);
         @chmod($path, 0600);
 
+        // Save winner answer as separate file
+        $debate = $data['debate'] ?? null;
+        $results = $data['results'] ?? [];
+        if ($debate !== null && !empty($debate['winner'])) {
+            $winnerName = $debate['winner'];
+            $winnerResult = $results[$winnerName] ?? null;
+            if ($winnerResult !== null && !empty($winnerResult['answer'])) {
+                $winnerMd = '# Winner: ' . $winnerName . "\n\n";
+                $winnerMd .= '**Question:** ' . $question . "\n\n";
+                $winnerMd .= '---' . "\n\n";
+                $winnerMd .= $winnerResult['answer'] . "\n\n";
+                $winnerMd .= '---' . "\n\n";
+                $winnerMd .= '**Model:** ' . ($winnerResult['model'] ?? 'unknown') . "\n";
+                $winnerMd .= '**Response time:** ' . ($winnerResult['response_time_ms'] ?? 0) . "ms\n";
+                $winnerMd .= '**Tokens:** ' . ($winnerResult['usage']['prompt_tokens'] ?? 0) . ' in / ' . ($winnerResult['usage']['completion_tokens'] ?? 0) . " out\n";
+
+                $winnerPath = $dir . '/winner.md';
+                file_put_contents($winnerPath, $winnerMd, LOCK_EX);
+                @chmod($winnerPath, 0600);
+            }
+        }
+
         return $sessionId;
     }
 
