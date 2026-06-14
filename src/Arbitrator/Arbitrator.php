@@ -1167,9 +1167,12 @@ class Arbitrator
 
         // Store debate result internally for retrieval by research.php
         $this->debateResult = [
-            'winner'       => $judgeResult['winner'],
-            'score_table'  => $scoreTable,
-            'narrative'    => $judgeResult['reasoning'],
+            'winner'          => $judgeResult['winner'],
+            'score_table'     => $scoreTable,
+            'narrative'       => $judgeResult['reasoning'],
+            'quality_scores'  => $qualityScores,
+            'critique_results' => $critiqueResults,
+            'diversity_data'  => $diversityData,
         ];
 
         return $this->debateResult;

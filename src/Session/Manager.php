@@ -190,6 +190,84 @@ class Manager
         // ## Debate section
         if ($debate !== null) {
             $transcript .= "## Debate\n\n";
+
+            // Per-agent quality scores breakdown
+            if (!empty($debate['quality_scores'])) {
+                $transcript .= "### Quality Scores\n\n";
+                $transcript .= "| Agent | Relevance | Completeness | Citations | Clarity | Confidence | Composite |\n";
+                $transcript .= "|-------|-----------|-------------|-----------|---------|------------|-----------|\n";
+                foreach ($debate['quality_scores'] as $name => $scores) {
+                    $transcript .= sprintf(
+                        "| %s | %s/10 | %s/10 | %s/10 | %s/10 | %s/10 | %s/10 |\n",
+                        $name,
+                        number_format((float) ($scores['relevance'] ?? 0), 1),
+                        number_format((float) ($scores['completeness'] ?? 0), 1),
+                        number_format((float) ($scores['citation_quality'] ?? 0), 1),
+                        number_format((float) ($scores['clarity'] ?? 0), 1),
+                        number_format((float) ($scores['confidence'] ?? 0), 1),
+                        number_format((float) ($scores['composite'] ?? 0), 1)
+                    );
+                }
+                $transcript .= "\n";
+
+                // Scoring reasoning per agent
+                foreach ($debate['quality_scores'] as $name => $scores) {
+                    if (!empty($scores['reasoning'])) {
+                        $transcript .= '**' . $name . ' reasoning:** ' . $scores['reasoning'] . "\n\n";
+                    }
+                }
+            }
+
+            // Peer critiques (Round 2)
+            if (!empty($debate['critique_results'])) {
+                $transcript .= "### Peer Critiques\n\n";
+                foreach ($debate['critique_results'] as $critic => $cr) {
+                    $transcript .= '**From ' . $critic . ':**' . "\n\n";
+                    if (!empty($cr['critiques'])) {
+                        // Parse critique JSON for structured display
+                        $rawCritiques = $cr['critiques'];
+                        $cleaned = preg_replace('/^```(?:json)?\s*\n?/i', '', $rawCritiques);
+                        $cleaned = preg_replace('/\n?```\s*$/', '', $cleaned);
+                        $parsed = json_decode(trim($cleaned), true);
+                        if (is_array($parsed)) {
+                            foreach ($parsed as $peerKey => $critique) {
+                                $transcript .= '  - **Peer ' . $peerKey . ':** score=' . ($critique['score'] ?? '?') . '/10';
+                                if (!empty($critique['strengths'])) {
+                                    $transcript .= ', strengths: ' . (is_array($critique['strengths']) ? implode('; ', $critique['strengths']) : $critique['strengths']);
+                                }
+                                if (!empty($critique['weaknesses'])) {
+                                    $transcript .= ', weaknesses: ' . (is_array($critique['weaknesses']) ? implode('; ', $critique['weaknesses']) : $critique['weaknesses']);
+                                }
+                                $transcript .= "\n";
+                            }
+                        } else {
+                            $transcript .= '  ' . mb_substr($rawCritiques, 0, 500) . "\n";
+                        }
+                    }
+                    if (!empty($cr['error'])) {
+                        $transcript .= '  _Error: ' . $cr['error'] . "_\n";
+                    }
+                    $transcript .= "\n";
+                }
+            }
+
+            // Diversity analysis
+            if (!empty($debate['diversity_data'])) {
+                $transcript .= "### Diversity Analysis\n\n";
+                $transcript .= "| Agent | Avg Similarity | Diversity Bonus |\n";
+                $transcript .= "|-------|----------------|-----------------|\n";
+                foreach ($debate['diversity_data'] as $name => $dd) {
+                    $transcript .= sprintf(
+                        "| %s | %s | %s |\n",
+                        $name,
+                        number_format((float) ($dd['avg_similarity'] ?? 0), 3),
+                        number_format((float) ($dd['diversity_bonus'] ?? 0), 3)
+                    );
+                }
+                $transcript .= "\n";
+            }
+
+            // Winner and judge narrative
             $transcript .= '### Winner: ' . $winner . "\n\n";
             $transcript .= ($debate['narrative'] ?? '[No narrative]') . "\n\n";
         }
