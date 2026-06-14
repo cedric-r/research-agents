@@ -397,6 +397,14 @@ class ResearchAgent
                 ]);
             }
             throw $e;
+        } catch (\Throwable $e) {
+            if ($this->logger) {
+                $this->logger->error('Agent critique validation failed', [
+                    'error' => $e->getMessage(),
+                    'model' => $this->config['model'],
+                ]);
+            }
+            throw new \RuntimeException('Critique validation error: ' . $e->getMessage(), 0, $e);
         }
     }
 
