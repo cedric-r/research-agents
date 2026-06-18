@@ -55,6 +55,12 @@ sessions/             — Auto-saved markdown transcripts per research run
 logs/                 — Timestamped activity logs
 ```
 
+## Architecture Diagram
+
+![ResearchAgents Architecture Diagram](docs/architecture.png)
+
+*Interactive HTML version: [docs/architecture.html](docs/architecture.html)*
+
 ## Usage
 
 ### CLI: `php research.php "question"`
